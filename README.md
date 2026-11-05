@@ -1,5 +1,9 @@
 # RBSI Grid Bot — วางกริด Rebalance Short Inverse บน Deribit
 
+📘 **คู่มือการใช้งานฉบับเต็ม: [MANUAL.md](MANUAL.md)** (ติดตั้ง · เตรียม API key · ใช้หน้าเว็บ · บอทกริด / Fixed Value / KZM · Telegram · แก้ปัญหา)
+
+> ⚠️ บอทนี้ส่งคำสั่งซื้อขายจริงด้วยเงินจริง ใช้ตามความเสี่ยงของคุณเอง ไม่มีการรับประกัน · เริ่มจาก dry-run และ zone เล็กเสมอ
+
 บอทดูแล **zone ย่อยหนึ่ง zone** ของระบบ Rebalance Short Inverse บน `BTC-PERPETUAL`
 คุณกำหนด กรอบล่าง / กรอบบน / gap / ขนาดต่อชั้น — บอทวางและดูแลออเดอร์ให้ครบตามสูตรตลอดเวลา
 **การต่อพอร์ต (handoff ไป sub ถัดไป) ทำเองนอกบอท**
@@ -119,7 +123,7 @@ $B close -c zones/beta2-82k-88k.toml --live              # ยกเลิกอ
 ## ทดสอบ
 
 ```bash
-.venv/bin/python -m pytest -q          # 53 เทสต์: ตรรกะกริด + สูตร liq (เทียบ JS ของ monitor) + จำลองทั้งระบบ
+.venv/bin/python -m pytest -q          # 232 เทสต์: ตรรกะกริด + สูตร liq (เทียบ JS ของ monitor) + จำลองทั้งระบบ
 .venv/bin/python -m tests.soak 200     # ทดสอบหนัก 5 สภาพ × 200 เส้นทางราคา
 ```
 
@@ -139,6 +143,6 @@ rate limit — ตรวจทุกก้าวว่าไม่เคย long
 
 ## ข้อจำกัด
 
-- label ของ Deribit ใช้ `a-z 0-9 - _` · ยังไม่ได้ทดสอบกับบัญชีจริง — ให้ลองกับ zone เล็กก่อน
+- label ของ Deribit ใช้ `a-z 0-9 - _` · ให้ลองกับ zone เล็กก่อนใช้กับเงินก้อนจริง
 - ค่า MM default 1.26% มาจากจอจริง 26 ก.ย. 2026 (ปัด 4 ตำแหน่ง) · เมื่อมี position บอทสอบเทียบจากค่าจริงเอง
 - บอทไม่รู้เรื่อง zone อื่น/sub อื่น — หนึ่ง process ต่อหนึ่ง zone ต่อหนึ่ง subaccount
