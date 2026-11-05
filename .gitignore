@@ -1,0 +1,20 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+zones/*.toml
+!zones/.keep
+.pytest_cache/
+zones/.bak/
+fv/*.toml
+!fv/example-fixed-value.toml
+# ข้อมูลส่วนตัว/สถานะเครื่อง — ไม่ขึ้น GitHub
+.DS_Store
+HANDOFF.md
+**/.bak/
+kzm/*.toml
+!kzm/example-kzm.toml
+*.log
+*.out
+.env.*
+!.env.example

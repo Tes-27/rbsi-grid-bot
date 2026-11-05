@@ -1,0 +1,35 @@
+# คัดลอกเป็นไฟล์ของ zone เช่น zones/beta2-82k-88k.toml แล้วแก้ค่า
+# ความลับ (API key, Telegram token) อยู่ใน ~/rbsi-grid-bot/.env (chmod 600) ไม่ใส่ในไฟล์นี้
+name = "Beta2"                      # ชื่อที่ขึ้นหน้าข้อความ Telegram
+env_file = "../.env"               # ไฟล์ zone อยู่ใน zones/ → .env อยู่โฟลเดอร์บน
+state_dir = "~/.rbsi-bot"           # ไฟล์สถานะ zone + log + lock
+live_allowed = false                # ต้องเป็น true และสั่ง --live ถึงจะส่งคำสั่งจริง
+
+[deribit]
+testnet = false                     # true = test.deribit.com (ใช้ key ของ testnet)
+client_id_env = "DERIBIT_CLIENT_ID"
+client_secret_env = "DERIBIT_CLIENT_SECRET"
+
+[zone]                              # zone ย่อยเท่านั้น — การต่อพอร์ตทำเอง
+instrument = "BTC-PERPETUAL"
+direction = "short"                 # short (ค่าเดิม) | long = กระจกเงา: position 0 ที่กรอบบน · long เต็มที่กรอบล่าง
+lower = 82000                       # short: ชนกรอบล่าง → position ต้องเป็น 0
+upper = 88000                       # short: ชนกรอบบน → short เต็ม (n × size) แล้วหยุดเพิ่ม
+gap = 500
+size = 1000                         # USD ต่อชั้น (ทวีคูณของ 10)
+
+[safety]
+tol_frac = 0.25                     # ระยะเผื่อความสอดคล้องราคา = 0.25 × gap
+max_catchup = 2                     # ชั้นที่ตามราคาไม่ทันพร้อมกันสูงสุด เกินนี้ = หยุด
+chase_frac = 0.05                   # ทุกไม้ post-only: ราคาทะลุชั้นแล้ววางที่ bid/ask แทน เลื่อนตามเมื่อหนีเกิน 0.05 × gap
+liq_buffer = 500                    # liq ตอน zone เต็มต้องสูงกว่า upper อย่างน้อยเท่านี้
+default_mmr = 0.0126                # MM rate ตอนยังไม่มี position ให้สอบเทียบ (จอจริง 26 ก.ย. 2026)
+settle_sec = 0.3                    # อ่านสถานะ 2 รอบห่างกันเท่านี้
+debounce_sec = 0.1                  # รอหลังได้ event ก่อนตรวจ
+reconcile_sec = 30
+pending_ttl = 60
+flux_halt_sec = 180
+
+[telegram]
+token_env = "TG_BOT_TOKEN"
+chat_id_env = "TG_CHAT_ID"

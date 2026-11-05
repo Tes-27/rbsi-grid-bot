@@ -1,0 +1,34 @@
+# ตัวอย่างบอท Fixed Asset Value (Deribit spot) — คัดลอกเป็น fv/<ชื่อ>.toml แล้วแก้ค่า
+# ใช้ subaccount แยกเฉพาะบอทนี้: บอทถือว่า BTC และ USDC ทั้งหมดใน sub เป็นของมัน
+name = "FV-Beta5"                     # ชื่อที่ขึ้นหน้าข้อความ Telegram
+env_file = "../.env"
+state_dir = "~/.rbsi-bot"
+live_allowed = false                  # ต้องเป็น true และสั่ง --live ถึงจะส่งคำสั่งจริง
+
+[deribit]
+testnet = false
+client_id_env = "DERIBIT_CLIENT_ID_BETA5"          # key ของ sub นี้ (เพิ่มจากหน้าเว็บ แท็บ ＋ เพิ่ม API key)
+client_secret_env = "DERIBIT_CLIENT_SECRET_BETA5"
+
+[fixed_value]
+instrument = "BTC_USDC"
+value = 3500                          # มูลค่า BTC ที่ต้องการถือ (USD)
+mode = "usd"                          # "usd" = step เป็น USD · "pct" = step เป็น % ของ value
+step = 100                            # ห่างจาก value ครบเท่านี้ → ขาย/ซื้อกลับเข้า value (post-only)
+min_order_usd = 5                     # ไม้เล็กกว่านี้ไม่วาง
+max_order_usd = 1000                  # ราคากระโดดแรง → แบ่งไม้ไม่เกินเท่านี้ (0 = ไม่จำกัด)
+fee_rate = 0.0002                     # maker ของ Deribit spot (ไว้กันเงินพอจ่าย fee)
+
+[safety]
+settle_sec = 0.3
+debounce_sec = 0.1
+reconcile_sec = 30
+pending_ttl = 60
+flux_halt_sec = 180
+cash_accept_sec = 10                  # USDC ต่างจากบัญชีไม้นานเท่านี้ (BTC ตรง) → ถือว่าโอนเข้า/ออก
+heartbeat_sec = 300
+summary_hours = 12
+
+[telegram]
+token_env = "TG_BOT_TOKEN"
+chat_id_env = "TG_CHAT_ID"

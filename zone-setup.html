@@ -1,0 +1,273 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RBSI Zone Setup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f1012;--tile:#1b1d22;--tile2:#23262d;--ink:#ecedee;--sec:#a9abb0;--muted:#767980;--line:#2c2f36;--grid:#24272d;
+ --blue:#5b9cf2;--green:#3fbf8a;--red:#ef6461;--orange:#f59e3d}
+*{box-sizing:border-box;margin:0}
+html,body{background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans Thai",system-ui,sans-serif;font-size:14px;line-height:1.55}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.wrap{max-width:1280px;margin:0 auto;padding:20px 22px 50px}
+header{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+header h1{font-size:21px;font-weight:700}header .sub{font-size:12.5px;color:var(--muted)}
+.chip{margin-left:auto;background:var(--tile);border:1px solid var(--line);border-radius:12px;padding:8px 12px;display:flex;gap:10px;align-items:center}
+.chip .p{font:600 19px "IBM Plex Mono",monospace}.chip .s{font-size:11.5px;color:var(--muted)}
+.layout{display:grid;grid-template-columns:340px 1fr;gap:14px}@media(max-width:1000px){.layout{grid-template-columns:1fr}}
+.layout>*{min-width:0}
+.card{background:var(--tile);border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin-bottom:14px}
+.card h2{font-size:12px;font-weight:600;color:var(--sec);letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px}
+.card h3{font-size:14px;font-weight:600;margin-bottom:8px}
+.fld{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 0;font-size:13px;color:var(--sec)}
+.fld input,.fld select{width:130px;background:var(--tile2);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:6px 8px;font:500 13.5px "IBM Plex Mono",monospace;text-align:right;outline:none}
+.fld input[type=text]{width:150px;text-align:left}.fld select{font-family:inherit;text-align:left}
+.fld input:focus{border-color:var(--blue)}.fld input.bad{border-color:var(--red)}
+.info{font-size:12px;color:var(--sec);margin-top:6px;line-height:1.7}.info b{color:var(--ink);font-weight:500}
+details summary{cursor:pointer;color:var(--sec);font-size:12.5px;margin:4px 0}
+button{font:inherit;cursor:pointer}
+.btn{border:1px solid var(--line);background:var(--tile2);color:var(--ink);border-radius:9px;padding:7px 12px;font-size:12.5px}
+.btn:hover{border-color:var(--blue)}.btn.pri{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}@media(max-width:1200px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.kpi{background:var(--tile);border:1px solid var(--line);border-radius:12px;padding:11px 14px}
+.kpi .t{font-size:11.5px;color:var(--muted)}.kpi .v{font:600 21px "IBM Plex Mono",monospace;margin:2px 0}.kpi .s{font-size:11.5px;color:var(--sec)}
+.pos{color:var(--green)}.neg{color:var(--red)}.org{color:var(--orange)}
+.msg{border-radius:9px;padding:8px 12px;font-size:12.5px;margin-bottom:10px}
+.msg.err{background:#2a1a1a;border-left:4px solid var(--red)}.msg.warn{background:#2a2418;border-left:4px solid var(--orange)}.msg.ok{background:#15271f;border-left:4px solid var(--green)}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{color:var(--muted);font-weight:500;text-align:right;padding:5px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{text-align:right;padding:5px 8px;border-bottom:1px solid var(--grid);font-family:"IBM Plex Mono",monospace;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+tr.now td{background:#1f2a3a}
+.tag{display:inline-block;border-radius:6px;padding:1px 8px;font:600 11px "IBM Plex Sans Thai",sans-serif}
+.tag.b{background:rgba(63,191,138,.16);color:var(--green)}.tag.s{background:rgba(239,100,97,.16);color:var(--red)}
+pre{background:#0b0c0e;border:1px solid var(--line);border-radius:10px;padding:12px;font:12.5px/1.6 "IBM Plex Mono",monospace;overflow-x:auto;white-space:pre;color:#d7d9dc}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:1200px){.two{grid-template-columns:1fr}}.two>*{min-width:0}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--green);color:#0b0c0e;font-weight:600;border-radius:10px;padding:8px 16px;display:none}
+</style></head><body><div class="wrap">
+<header>
+ <div><h1>RBSI Zone Setup</h1><div class="sub">ตั้งค่า zone ของ rbsi-grid-bot → ได้ไฟล์ config (TOML) + คำสั่ง CLI · ตรวจกติกาเดียวกับบอท</div></div>
+ <div class="chip"><div><div class="s" id="pSrc">Deribit BTC-PERPETUAL mark</div><div class="p" id="pNow">–</div></div>
+  <input id="pManual" type="number" step="0.5" placeholder="ราคาเอง" style="width:110px;background:var(--tile2);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:6px 8px;font:500 13px 'IBM Plex Mono',monospace;text-align:right">
+  <button class="btn" id="btnRef">↻</button></div>
+</header>
+<div class="layout">
+<aside>
+ <div class="card"><h2>1 · Zone</h2>
+  <div class="fld">ชื่อ (ขึ้นใน Telegram)<input type="text" id="name"></div>
+  <div class="fld">ชื่อไฟล์<input type="text" id="file"></div>
+  <div class="fld">กรอบล่าง (USD)<input type="number" id="lower" step="500"></div>
+  <div class="fld">กรอบบน (USD)<input type="number" id="upper" step="500"></div>
+  <div class="fld">Gap (USD)<input type="number" id="gap" step="100"></div>
+  <div class="fld">ขนาดต่อชั้น (USD)<input type="number" id="size" step="10"></div>
+  <div class="row"><button class="btn" id="btnCenter">จัดกรอบรอบราคาปัจจุบัน</button></div>
+  <div class="info">กรอบล่าง: ราคาชนแล้ว position ต้องเป็น 0 · กรอบบน: short เต็มแล้วบอทหยุดเพิ่ม · การต่อพอร์ตทำเองนอกบอท</div>
+ </div>
+ <div class="card"><h2>2 · บัญชีตอนนี้ (สำหรับตรวจ)</h2>
+  <div class="fld">Position ตอนนี้ (USD, short = ลบ)<input type="number" id="pos" step="10"></div>
+  <div class="fld">Avg entry (ถ้ามี position)<input type="number" id="entry" step="0.5"></div>
+  <div class="fld">Equity (BTC)<input type="number" id="equity" step="0.0001"></div>
+  <div class="fld">MM rate (%)<input type="number" id="mmr" step="0.01"></div>
+  <div class="info">ดูจากจอ Deribit / position monitor · Equity ใช้ประมาณ liq ตอน zone เต็ม (สูตรเดียวกับบอท) · MM rate 1.26% มาจากจอจริง 26 ก.ย.</div>
+ </div>
+ <div class="card"><h2>3 · โหมด</h2>
+  <div class="fld">ส่งคำสั่งจริงได้ (live_allowed)<select id="live"><option value="false">false — dry-run เท่านั้น</option><option value="true">true — อนุญาต --live</option></select></div>
+  <div class="fld">Deribit<select id="testnet"><option value="false">mainnet</option><option value="true">testnet</option></select></div>
+  <details><summary>ค่าความปลอดภัย (ขั้นสูง)</summary>
+   <div class="fld">tol_frac<input type="number" id="tol_frac" step="0.05"></div>
+   <div class="fld">max_catchup<input type="number" id="max_catchup" step="1"></div>
+   <div class="fld">chase_frac<input type="number" id="chase_frac" step="0.01"></div>
+   <div class="fld">liq_buffer (USD)<input type="number" id="liq_buffer" step="100"></div>
+   <div class="fld">reconcile_sec<input type="number" id="reconcile_sec" step="5"></div>
+   <div class="fld">max_orders_per_cycle<input type="number" id="max_orders_per_cycle" step="1"></div>
+  </details>
+  <button class="btn" id="btnReset" style="margin-top:8px">คืนค่าเริ่มต้น</button>
+ </div>
+</aside>
+<main>
+ <div id="msgs"></div>
+ <div class="kpis" id="kpis"></div>
+ <div class="two">
+  <div class="card"><h3>ไฟล์ config</h3>
+   <div class="row"><button class="btn pri" id="btnCmd">คัดลอกคำสั่งสร้างไฟล์ (วางใน terminal)</button><button class="btn" id="btnToml">คัดลอกเฉพาะ TOML</button><button class="btn" id="btnDl">ดาวน์โหลด .toml</button></div>
+   <pre id="toml"></pre>
+   <div class="info">"คัดลอกคำสั่งสร้างไฟล์" จะได้คำสั่งที่เขียนไฟล์ลง <b>~/rbsi-grid-bot/zones/</b> ให้เลย · ความลับ (API key, Telegram) อยู่ใน .env ไม่อยู่ในไฟล์นี้</div>
+  </div>
+  <div class="card"><h3>คำสั่ง CLI (ตามลำดับ)</h3><pre id="cli"></pre>
+   <div class="info">รับช่วงครั้งแรกด้วย <b>--adopt-manual</b>: ออเดอร์มือที่ตรงสูตรนับเป็นของบอทเลย ชั้นที่ขาดบอทวางเพิ่ม ตัวไม่ตรงสูตรยกเลิก · หลังเปิด live อย่าวาง/ยกเลิกออเดอร์บน BTC-PERPETUAL ใน subaccount นี้เอง</div></div>
+ </div>
+ <div class="card"><h3>ออเดอร์ที่บอทคาดหวัง ณ ราคาปัจจุบัน <span class="info" id="mInfo" style="font-weight:400"></span></h3>
+  <div class="row"><span class="info" style="margin:0">จำนวนชั้นที่ short (m)</span><select id="mSel" style="background:var(--tile2);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:5px 8px"></select></div>
+  <div style="overflow-x:auto"><table id="tbl"></table></div>
+  <div class="info">เทียบกับจอ Deribit ได้เลย — ถ้าตรงทุกบรรทัด บอทจะรับออเดอร์มือทั้งหมดโดยไม่ยกเลิกหรือวางใหม่</div></div>
+</main></div></div>
+<div class="toast" id="toast"></div>
+<script>
+const $ = id => document.getElementById(id);
+const fmt = (x, d = 0) => isFinite(x) ? x.toLocaleString('en-US', {minimumFractionDigits: d, maximumFractionDigits: d}) : '–';
+const fnum = x => Number.isInteger(x) ? String(x) : String(+x.toFixed(8));
+const KEY = 'rbsi-zone-setup-v1';
+const DEF = {name: 'Beta2', file: 'beta2-82k-88k', lower: 82000, upper: 88000, gap: 500, size: 1000, pos: -3000, entry: 84118.2, equity: '', mmr: 1.26,
+  live: 'false', testnet: 'false', tol_frac: 0.25, max_catchup: 2, chase_frac: 0.05, liq_buffer: 500, reconcile_sec: 30, max_orders_per_cycle: 6};
+const IDS = Object.keys(DEF);
+const TXT = ['name', 'file', 'live', 'testnet'];
+let P = NaN, S = {};
+const ls = {get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }};
+function load() { try { S = Object.assign({}, DEF, JSON.parse(ls.get(KEY) || '{}')); } catch (e) { S = {...DEF}; } for (const k of IDS) $(k).value = S[k]; }
+function read() { for (const k of IDS) S[k] = TXT.includes(k) ? $(k).value.trim() : ($(k).value === '' ? '' : parseFloat($(k).value)); ls.set(KEY, JSON.stringify(S)); }
+
+// ---- กติกาเดียวกับ rbsi_bot/grid.py (ZoneConfig) ----
+function validate(s) {
+  const e = [], bad = new Set(), tick = 0.5;
+  if (!(s.upper > s.lower && s.lower > 0)) { e.push('กรอบบนต้องมากกว่ากรอบล่าง และกรอบล่าง > 0'); bad.add('upper'); bad.add('lower'); }
+  if (!(s.gap > 0)) { e.push('gap ต้องมากกว่า 0'); bad.add('gap'); }
+  else { const n = (s.upper - s.lower) / s.gap; if (Math.abs(n - Math.round(n)) > 1e-9 || Math.round(n) < 1) { e.push(`(กรอบบน − กรอบล่าง) = ${fmt(s.upper - s.lower)} ต้องหารด้วย gap ${fmt(s.gap)} ลงตัว`); bad.add('upper'); bad.add('gap'); } }
+  if (!(s.size >= 10) || s.size % 10) { e.push('ขนาดต่อชั้นต้องเป็นทวีคูณของ 10 USD'); bad.add('size'); }
+  for (const k of ['lower', 'gap']) if (isFinite(s[k]) && Math.abs(s[k] / tick - Math.round(s[k] / tick)) > 1e-9) { e.push(`${k} ต้องลงตัวกับ tick 0.5`); bad.add(k); }
+  if (!(s.tol_frac >= 0 && s.tol_frac < 0.5)) { e.push('tol_frac ต้องอยู่ใน [0, 0.5)'); bad.add('tol_frac'); }
+  if (!(s.chase_frac > 0 && s.chase_frac < 0.5)) { e.push('chase_frac ต้องอยู่ใน (0, 0.5)'); bad.add('chase_frac'); }
+  if (!/^[A-Za-z0-9._-]+$/.test(s.file || '')) { e.push('ชื่อไฟล์ใช้ได้แค่ a-z 0-9 . _ -'); bad.add('file'); }
+  if (!(s.max_catchup >= 1)) { e.push('max_catchup ≥ 1'); bad.add('max_catchup'); }
+  return {e, bad};
+}
+const zoneId = s => `BTC${fnum(s.lower)}-${fnum(s.upper)}g${fnum(s.gap)}q${s.size}`;
+function mRange(s, price) {
+  const n = Math.round((s.upper - s.lower) / s.gap), tol = s.tol_frac * s.gap;
+  const lo = Math.floor((price - tol - s.lower) / s.gap + 1e-12), hi = Math.ceil((price + tol - s.lower) / s.gap - 1e-12);
+  return [Math.max(0, Math.min(n, lo)), Math.max(0, Math.min(n, hi))];
+}
+// ---- สูตร liq เดียวกับ rbsi_bot/liq.py (port จาก deribit-monitor) ----
+function liqAfterFills(S0, E, M, eq, r, adds) {
+  const wb = eq + (S0 > 0 && E > 0 ? S0 * (1 / E - 1 / M) : 0);
+  const s2 = S0 + adds.reduce((a, x) => a + x[1], 0), inv2 = (S0 > 0 && E > 0 ? S0 / E : 0) + adds.reduce((a, x) => a + x[1] / x[0], 0);
+  const den = inv2 - wb; return s2 > 0 && den > 0 ? s2 * (1 - r) / den : null;
+}
+
+function toml(s) {
+  return `# สร้างจาก zone-setup.html · ${new Date().toISOString().slice(0, 16).replace('T', ' ')} UTC
+name = "${s.name.replace(/"/g, '')}"
+env_file = "../.env"
+state_dir = "~/.rbsi-bot"
+live_allowed = ${s.live}
+
+[deribit]
+testnet = ${s.testnet}
+client_id_env = "DERIBIT_CLIENT_ID"
+client_secret_env = "DERIBIT_CLIENT_SECRET"
+
+[zone]
+instrument = "BTC-PERPETUAL"
+lower = ${fnum(s.lower)}
+upper = ${fnum(s.upper)}
+gap = ${fnum(s.gap)}
+size = ${s.size}
+
+[safety]
+tol_frac = ${fnum(s.tol_frac)}
+max_catchup = ${s.max_catchup}
+chase_frac = ${fnum(s.chase_frac)}
+liq_buffer = ${fnum(s.liq_buffer)}
+default_mmr = ${fnum((s.mmr || 1.26) / 100)}
+settle_sec = 1.5
+reconcile_sec = ${fnum(s.reconcile_sec)}
+pending_ttl = 60
+flux_halt_sec = 180
+max_orders_per_cycle = ${s.max_orders_per_cycle}
+order_spacing_sec = 0.15
+throttle_max_sec = 30
+
+[telegram]
+token_env = "TG_BOT_TOKEN"
+chat_id_env = "TG_CHAT_ID"
+`;
+}
+
+function render() {
+  read();
+  const s = S, {e, bad} = validate(s), M = [];
+  for (const k of IDS) $(k).classList && $(k).classList.toggle('bad', bad.has(k));
+  const price = isFinite(parseFloat($('pManual').value)) ? parseFloat($('pManual').value) : P;
+  $('pNow').textContent = isFinite(price) ? fmt(price, 1) : '–';
+  if (e.length) { $('msgs').innerHTML = `<div class="msg err">${e.join('<br>')}</div>`; $('kpis').innerHTML = ''; $('tbl').innerHTML = ''; $('toml').textContent = ''; $('cli').textContent = ''; return; }
+  const n = Math.round((s.upper - s.lower) / s.gap), cap = n * s.size;
+  const [lo, hi] = isFinite(price) ? mRange(s, price) : [0, n];
+  const posShort = isFinite(s.pos) ? -s.pos : NaN, mPos = posShort / s.size;
+  const posOk = isFinite(mPos) && posShort >= 0 && Math.abs(mPos - Math.round(mPos)) < 1e-9;
+  if (isFinite(s.pos) && s.pos !== '') {
+    if (!posOk) M.push(['err', `position ${fmt(s.pos)} ไม่ใช่ short ทวีคูณของ ${fmt(s.size)} — บอทจะไม่เริ่ม (ต้องปิด/ปรับให้ลงตัวก่อน)`]);
+    else if (isFinite(price) && !(lo <= mPos && mPos <= hi)) M.push(['err', `position ${fmt(mPos)} ชั้นไม่สอดคล้องกับราคา ${fmt(price, 1)} (ควร ${lo}–${hi} ชั้น) — บอทจะไม่เริ่ม`]);
+    else M.push(['ok', `position ${fmt(s.pos)} = ${fmt(mPos)} ชั้น สอดคล้องกับราคา — รับช่วงได้`]);
+  }
+  if (isFinite(price) && (price < s.lower - s.gap * 4 || price > s.upper + s.gap * 4)) M.push(['warn', 'ราคาปัจจุบันอยู่ห่างนอกกรอบมาก — ตรวจตัวเลขกรอบอีกครั้ง']);
+  const gapPct = isFinite(price) ? s.gap / price * 100 : NaN;
+  if (gapPct < 0.1) M.push(['warn', `gap ${fmt(gapPct, 3)}% ของราคา แคบมาก กำไรต่อรอบ ≈ fee maker 2 ข้าง (0.03%) — เหมาะแค่ทดสอบ`]);
+  // liq ตอน zone เต็ม
+  let liq = null;
+  const mNow = posOk ? Math.round(mPos) : Math.max(lo, Math.min(hi, Math.ceil(((price || s.lower) - s.lower) / s.gap - 1e-9)));
+  if (s.equity > 0 && isFinite(price)) {
+    const adds = []; for (let k = mNow + 1; k <= n; k++) adds.push([s.lower + k * s.gap, s.size]);
+    liq = liqAfterFills(posOk ? posShort : 0, s.entry || price, price, s.equity, (s.mmr || 1.26) / 100, adds);
+    if (liq !== null && liq < s.upper + s.liq_buffer) M.push(['err', `liq ถ้า zone เต็ม ≈ ${fmt(liq)} ต่ำกว่า กรอบบน + liq_buffer (${fmt(s.upper + s.liq_buffer)}) — บอทจะไม่เริ่ม เติมเงินหรือลดขนาด`]);
+    else if (liq !== null) M.push(['ok', `liq ถ้า zone เต็ม ≈ ${fmt(liq)} สูงกว่ากรอบบน ${fmt(liq - s.upper)} USD`]);
+  } else M.push(['warn', 'ใส่ Equity (BTC) เพื่อประมาณจุด liq ตอน zone เต็ม — บอทเช็คด่านนี้ตอนเริ่มด้วยค่าจริงอยู่แล้ว']);
+  if (s.live === 'true') M.push(['warn', 'live_allowed = true — รันพร้อม --live จะส่งคำสั่งจริง ควรผ่าน check และ dry-run ก่อน']);
+  $('msgs').innerHTML = M.map(([c, t]) => `<div class="msg ${c}">${t}</div>`).join('');
+  const tile = (t, v, sub, c = '') => `<div class="kpi"><div class="t">${t}</div><div class="v ${c}">${v}</div><div class="s">${sub}</div></div>`;
+  const pairUsd = isFinite(price) ? s.size * s.gap / (price + s.gap) - 0.00015 * s.size * 2 : NaN;
+  $('kpis').innerHTML = tile('จำนวนชั้น', `${n}`, `${fmt(s.lower)} – ${fmt(s.upper)} · ทีละ ${fmt(s.gap)}`) +
+    tile('Short สูงสุด (zone เต็ม)', `${fmt(cap)} USD`, `${fmt(cap / 10)} cont. · ≈ ${fmt(cap / s.upper, 4)} BTC ที่กรอบบน`) +
+    tile('กำไรต่อคู่ ณ ราคานี้', isFinite(pairUsd) ? `$${fmt(pairUsd, 2)}` : '–', `gap ${fmt(gapPct, 2)}% · หัก maker 0.015% × 2`, pairUsd > 0 ? 'pos' : 'neg') +
+    tile('Liq ถ้า zone เต็ม', liq ? fmt(liq) : '–', liq ? `ต้อง ≥ ${fmt(s.upper + s.liq_buffer)}` : 'ใส่ equity เพื่อคำนวณ', liq && liq >= s.upper + s.liq_buffer ? 'pos' : liq ? 'neg' : '');
+  // ตารางออเดอร์
+  const sel = $('mSel'), prev = sel.value; sel.innerHTML = '';
+  for (let m = lo; m <= hi; m++) sel.innerHTML += `<option value="${m}">${m} ชั้น (position ${fmt(-m * s.size)})</option>`;
+  const want = (prev !== '' && +prev >= lo && +prev <= hi) ? +prev : (posOk && mPos >= lo && mPos <= hi ? mPos : mNow);
+  sel.value = String(Math.max(lo, Math.min(hi, want)));
+  const m = +sel.value;
+  $('mInfo').textContent = isFinite(price) ? `· ราคา ${fmt(price, 1)} → short ได้ ${lo}–${hi} ชั้น` : '';
+  let rows = '<thead><tr><th>ชั้น</th><th>ออเดอร์</th><th>ราคา</th><th>ขนาด (USD)</th><th>cont.</th><th>label</th></tr></thead><tbody>';
+  for (let k = n; k >= 1; k--) {
+    const buy = k <= m, px = buy ? s.lower + (k - 1) * s.gap : s.lower + k * s.gap;
+    const mark = isFinite(price) && k === m ? '<tr class="now"><td colspan="6" style="text-align:center;color:var(--blue);font-family:inherit">── ราคาปัจจุบัน ' + fmt(price, 1) + ' ──</td></tr>' : '';
+    rows += mark + `<tr><td>${k}</td><td>${buy ? '<span class="tag b">BUY reduce-only</span>' : '<span class="tag s">SELL</span>'}</td><td>${fmt(px, 1)}</td><td>${fmt(s.size)}</td><td>${fmt(s.size / 10)}</td><td style="color:var(--muted)">rbsi_${zoneId(s)}_${String(k).padStart(3, '0')}</td></tr>`;
+  }
+  $('tbl').innerHTML = rows + '</tbody>';
+  if (m === 0 && isFinite(price)) $('tbl').querySelector('tbody').insertAdjacentHTML('beforeend', '<tr class="now"><td colspan="6" style="text-align:center;color:var(--blue);font-family:inherit">── ราคาปัจจุบัน ' + fmt(price, 1) + ' (ต่ำกว่าทุกชั้น) ──</td></tr>');
+  // TOML + CLI
+  const t = toml(s), f = `zones/${s.file}.toml`, B = '.venv/bin/python -m rbsi_bot';
+  $('toml').textContent = t;
+  $('cli').textContent = `cd ~/rbsi-grid-bot
+# 1) ตรวจชุดออเดอร์ (ออฟไลน์)
+${B} plan -c ${f} --price ${isFinite(price) ? fnum(Math.round(price * 2) / 2) : 83000}
+# 2) ต่อ Deribit อ่านสถานะจริง บอกว่าจะทำอะไร (ไม่ส่งคำสั่ง)
+${B} check -c ${f} --adopt-manual
+# 3) dry-run: log ว่าจะทำอะไร
+${B} run -c ${f} --adopt-manual
+# 4) ของจริง (ต้อง live_allowed = true)
+${B} run -c ${f} --adopt-manual --live
+# ดูสถานะ / ปิด zone ถาวร
+${B} status -c ${f}
+${B} close -c ${f} --live`;
+  window.__zone = {toml: t, file: f, n, cap, lo, hi, zoneId: zoneId(s)};
+}
+function toast(t) { const el = $('toast'); el.textContent = t; el.style.display = 'block'; setTimeout(() => el.style.display = 'none', 1800); }
+async function copy(text, msg) { try { await navigator.clipboard.writeText(text); toast(msg); } catch (e) { toast('คัดลอกไม่ได้ — เลือกข้อความเองแทน'); } }
+$('btnCmd').onclick = () => { const z = window.__zone; if (!z) return; copy(`mkdir -p ~/rbsi-grid-bot/zones && cat > ~/rbsi-grid-bot/${z.file} <<'EOF'\n${z.toml}EOF\necho "บันทึก ~/rbsi-grid-bot/${z.file}"`, 'คัดลอกคำสั่งแล้ว — วางใน terminal'); };
+$('btnToml').onclick = () => window.__zone && copy(window.__zone.toml, 'คัดลอก TOML แล้ว');
+$('btnDl').onclick = () => { const z = window.__zone; if (!z) return; const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([z.toml], {type: 'text/plain'})); a.download = z.file.split('/').pop(); a.click(); toast('ดาวน์โหลดแล้ว — ย้ายไฟล์ไปไว้ใน ~/rbsi-grid-bot/zones/'); };
+$('btnCenter').onclick = () => { read(); const price = isFinite(parseFloat($('pManual').value)) ? parseFloat($('pManual').value) : P; if (!isFinite(price) || !(S.gap > 0)) return;
+  const n = Math.max(1, Math.round((S.upper - S.lower) / S.gap) || 12), lower = Math.floor(price / S.gap) * S.gap - Math.floor(n / 4) * S.gap;
+  $('lower').value = lower; $('upper').value = lower + n * S.gap; render(); };
+$('btnReset').onclick = () => { S = {...DEF}; for (const k of IDS) $(k).value = S[k]; render(); };
+$('mSel').onchange = render;
+for (const k of IDS) $(k).addEventListener('input', render);
+$('pManual').addEventListener('input', render);
+async function getPrice() {
+  try { const d = await fetch('https://www.deribit.com/api/v2/public/ticker?instrument_name=BTC-PERPETUAL').then(r => r.json()); P = +d.result.mark_price;
+    $('pSrc').textContent = 'Deribit BTC-PERPETUAL mark · ' + new Date().toLocaleTimeString('th-TH', {hour: '2-digit', minute: '2-digit'}); }
+  catch (e) { $('pSrc').textContent = 'ดึงราคาไม่สำเร็จ — ใส่ราคาเอง'; }
+  render();
+}
+$('btnRef').onclick = getPrice;
+load(); render(); getPrice(); setInterval(getPrice, 60000);
+</script></body></html>

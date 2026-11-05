@@ -1,0 +1,1364 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RBSI Control</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f1012;--tile:#1b1d22;--tile2:#23262d;--ink:#ecedee;--sec:#a9abb0;--muted:#767980;--line:#2c2f36;--grid:#24272d;
+ --blue:#5b9cf2;--green:#3fbf8a;--red:#ef6461;--orange:#f59e3d}
+*{box-sizing:border-box;margin:0}
+html,body{background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans Thai",system-ui,sans-serif;font-size:14px;line-height:1.55}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.wrap{max-width:1320px;margin:0 auto;padding:18px 20px 50px}
+header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+header h1{font-size:21px;font-weight:700}header .sub{font-size:12.5px;color:var(--muted)}
+.chips{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap}
+.chip{background:var(--tile);border:1px solid var(--line);border-radius:12px;padding:7px 12px}
+.chip .p{font:600 18px "IBM Plex Mono",monospace}.chip .s{font-size:11.5px;color:var(--muted)}
+.layout{display:grid;grid-template-columns:330px 1fr;gap:14px}@media(max-width:1000px){.layout{grid-template-columns:1fr}}
+.layout>*{min-width:0}
+.card{background:var(--tile);border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin-bottom:14px}
+.card h2{font-size:12px;font-weight:600;color:var(--sec);letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px}
+.card h3{font-size:14px;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.fld{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 0;font-size:13px;color:var(--sec)}
+.fld input,.fld select,select.big{width:140px;background:var(--tile2);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:6px 8px;font:500 13.5px "IBM Plex Mono",monospace;text-align:right;outline:none}
+.fld input[type=text]{text-align:left}.fld select,select.big{font-family:inherit;text-align:left}
+select.big{width:100%;font-size:13.5px;padding:8px}
+.fld input:focus{border-color:var(--blue)}.fld input.bad{border-color:var(--red)}
+.fld .u{font-size:11px;color:var(--muted)}
+.info{font-size:12px;color:var(--sec);margin-top:6px;line-height:1.7}.info b{color:var(--ink);font-weight:500}
+details summary{cursor:pointer;color:var(--sec);font-size:12.5px;margin:6px 0}
+button{font:inherit;cursor:pointer}
+.btn{border:1px solid var(--line);background:var(--tile2);color:var(--ink);border-radius:9px;padding:7px 12px;font-size:13px}
+.btn:hover:not(:disabled){border-color:var(--blue)}.btn:disabled{opacity:.38;cursor:not-allowed}
+.btn.pri{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600}
+.btn.go{background:var(--green);border-color:var(--green);color:#0b0c0e;font-weight:700}
+.btn.stop{background:var(--orange);border-color:var(--orange);color:#0b0c0e;font-weight:700}
+.btn.danger{border-color:var(--red);color:var(--red)}
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:14px}@media(max-width:1200px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.kpi{background:var(--tile);border:1px solid var(--line);border-radius:12px;padding:11px 14px}
+.kpi .t{font-size:11.5px;color:var(--muted)}.kpi .v{font:600 20px "IBM Plex Mono",monospace;margin:2px 0}.kpi .s{font-size:11.5px;color:var(--sec)}
+.pos{color:var(--green)}.neg{color:var(--red)}.org{color:var(--orange)}.mut{color:var(--muted)}
+.msg{border-radius:9px;padding:8px 12px;font-size:12.5px;margin-bottom:8px}
+.msg.err{background:#2a1a1a;border-left:4px solid var(--red)}.msg.warn{background:#2a2418;border-left:4px solid var(--orange)}.msg.ok{background:#15271f;border-left:4px solid var(--green)}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{color:var(--muted);font-weight:500;text-align:right;padding:5px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{text-align:right;padding:5px 8px;border-bottom:1px solid var(--grid);font-family:"IBM Plex Mono",monospace;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+tr.now td{background:#1f2a3a;text-align:center;color:var(--blue);font-family:inherit}
+.tag{display:inline-block;border-radius:6px;padding:1px 8px;font:600 11px "IBM Plex Sans Thai",sans-serif}
+.tag.b{background:rgba(63,191,138,.16);color:var(--green)}.tag.s{background:rgba(239,100,97,.16);color:var(--red)}
+.tag.run{background:rgba(63,191,138,.16);color:var(--green)}.tag.off{background:var(--tile2);color:var(--sec)}.tag.halt{background:rgba(239,100,97,.16);color:var(--red)}
+pre{background:#0b0c0e;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font:12px/1.6 "IBM Plex Mono",monospace;overflow:auto;white-space:pre-wrap;word-break:break-all;color:#d7d9dc;max-height:340px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:1200px){.two{grid-template-columns:1fr}}.two>*{min-width:0}
+.grid2{display:grid;grid-template-columns:auto 1fr;gap:3px 14px;font-size:13px}.grid2 .k{color:var(--muted)}.grid2 .v{font-family:"IBM Plex Mono",monospace;text-align:right}
+label.ck{display:flex;gap:6px;align-items:center;font-size:12.5px;color:var(--sec);cursor:pointer}
+.dirty{font-size:11.5px;color:var(--orange)}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--green);color:#0b0c0e;font-weight:600;border-radius:10px;padding:8px 16px;display:none;z-index:9}
+.toast.bad{background:var(--red);color:#fff}
+.spin::after{content:" ⏳"}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:-4px 0 14px;border-bottom:1px solid var(--line);padding-bottom:8px}
+.tab{border:1px solid var(--line);background:var(--tile);color:var(--sec);border-radius:10px;padding:7px 13px;font-size:13px;display:flex;gap:7px;align-items:center}
+.tab:hover{border-color:var(--blue)}.tab.on{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600}
+.tab .b{font-size:11px;opacity:.85}.tab.add{border-style:dashed}
+.modes{display:flex;gap:6px;margin:-6px 0 14px}.mode{border:1px solid var(--line);background:var(--tile);color:var(--sec);border-radius:9px;padding:6px 12px;font-size:12.5px}
+.mode.on{background:var(--tile2);border-color:var(--blue);color:var(--ink);font-weight:600}
+.fld input[type=password]{text-align:left;width:190px}.fld input.w{width:190px}
+</style></head><body><div class="wrap">
+<header>
+ <div><h1>RBSI Control</h1><div class="sub">ตั้ง zone · ดึงบัญชีจาก .env · สั่งบอท — รันในเครื่องนี้เท่านั้น (127.0.0.1)</div></div>
+ <div class="chips">
+  <div class="chip"><div class="s">บัญชีของ API key</div><div class="p" id="cUser" style="font-size:15px">–</div></div>
+  <div class="chip"><div class="s" id="cSrc">BTC-PERPETUAL mark</div><div class="p" id="cPx">–</div></div>
+  <button class="btn" id="btnRef" title="ดึงบัญชีใหม่">↻</button>
+ </div>
+</header>
+<nav class="tabs" id="tabs"></nav>
+<div class="modes" id="modes"><button class="mode on" data-mode="grid">กริด RBSI (perp)</button><button class="mode" data-mode="fv">Fixed Value (spot)</button><button class="mode" data-mode="kzm">KZM Grid (spot)</button></div>
+<div id="settings" style="display:none">
+<div class="two">
+ <div class="card"><h3>🔑 API key ใน .env</h3>
+  <div style="overflow-x:auto"><table id="keyTbl"></table></div>
+  <div class="info">ลบ key = เอาออกจาก .env (สำรองไฟล์เดิมเป็น .env.bak-เวลา) · ลบไม่ได้ถ้ามีบอทของบัญชีนั้นรันอยู่ · ไฟล์ zone/บอทของบัญชีนั้นยังอยู่</div>
+ </div>
+ <div class="card"><h3>📨 Telegram</h3>
+  <div class="grid2" id="tgInfo"><div class="k">กำลังโหลด…</div><div></div></div>
+  <div class="fld" style="margin-top:10px">Bot token ใหม่ (ถ้าจะเปลี่ยน)<input type="password" id="tgTok" autocomplete="new-password" placeholder="จาก @BotFather"></div>
+  <div class="row"><button class="btn" id="tgSaveTok">ตรวจ token แล้วบันทึก</button></div>
+  <div class="row"><button class="btn" id="tgFind">หา chat id</button>
+   <select id="tgChats" style="display:none;background:var(--tile2);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:6px 8px"></select>
+   <button class="btn" id="tgSaveChat" style="display:none">ใช้ chat นี้</button></div>
+  <div class="row"><button class="btn pri" id="tgTest">ส่งข้อความทดสอบ</button></div>
+  <div class="info">หา chat id: เปิด Telegram ทักบอทของคุณ (พิมพ์ /start) แล้วกด "หา chat id" · บอทที่รันอยู่ใช้ค่าใหม่หลังเริ่มใหม่ · token ไม่ถูกส่งกลับมาที่หน้าเว็บ</div>
+  <pre id="tgOut" style="display:none"></pre>
+ </div>
+</div>
+<div class="card" id="addKey" style="max-width:560px">
+ <h3>＋ เพิ่ม API key ของ subaccount</h3>
+ <div class="fld">ชื่อบัญชี (ขึ้นในแท็บ)<input type="text" id="kName" class="w" placeholder="เช่น Beta3"></div>
+ <div class="fld">Client ID<input type="text" id="kId" class="w" autocomplete="off" spellcheck="false"></div>
+ <div class="fld">Client Secret<input type="password" id="kSec" autocomplete="new-password"></div>
+ <div class="fld">Deribit<select id="kNet"><option value="false">mainnet</option><option value="true">testnet</option></select></div>
+ <div class="row"><button class="btn pri" id="btnKeyAdd">ทดสอบ login แล้วบันทึก</button><button class="btn" id="btnKeyCancel">ยกเลิก</button></div>
+ <div class="info">สร้าง key ในหน้า API ของ subaccount นั้นบน Deribit สิทธิ์ <b>trade:read_write</b> (ไม่ต้องมี wallet/withdraw) · ล็อก IP ถ้าทำได้<br>
+  เซิร์ฟเวอร์ในเครื่องจะ login ทดสอบก่อน ผ่านแล้วจึงบันทึกลง <b>.env</b> (chmod 600) · secret ไม่ถูกส่งกลับมาที่หน้าเว็บ · หนึ่ง key รันบอทได้ทีละตัว</div>
+ <pre id="kOut" style="display:none"></pre>
+</div>
+</div>
+<div class="layout" id="mainLayout">
+<aside>
+ <div class="card"><h2>ไฟล์ zone</h2>
+  <select class="big" id="selFile"></select>
+  <div class="row" style="margin-bottom:0"><span class="info" id="fileInfo" style="margin:0;flex:1"></span>
+   <button class="btn danger" id="btnDel" style="display:none;padding:4px 10px;font-size:12px">🗑 ลบไฟล์นี้</button></div>
+ </div>
+ <div class="card"><h2>1 · Zone</h2>
+  <div class="fld">ชื่อ (ขึ้นใน Telegram)<input type="text" id="name"></div>
+  <div class="fld">ชื่อไฟล์<input type="text" id="file"></div>
+  <div class="fld">ทิศทาง<select id="direction"><option value="short">Short — position 0 ที่กรอบล่าง</option><option value="long">Long — position 0 ที่กรอบบน</option></select></div>
+  <div class="fld">กรอบล่าง <span class="u">USD</span><input type="number" id="lower" step="500"></div>
+  <div class="fld">Gap <span class="u">USD</span><input type="number" id="gap" step="100"></div>
+  <div class="fld">จำนวนชั้น<input type="number" id="n" step="1" min="1"></div>
+  <div class="fld">กรอบบน <span class="u">USD</span><input type="number" id="upper" step="500"></div>
+  <div class="fld">ขนาดต่อชั้น <span class="u">USD</span><input type="number" id="size" step="10"></div>
+  <div class="row"><button class="btn" id="btnCenter">จัดกรอบรอบราคาปัจจุบัน</button></div>
+  <div class="info">แก้ <b>กรอบล่าง / gap / จำนวนชั้น</b> แล้วกรอบบนคำนวณให้ · แก้กรอบบนตรง ๆ ก็ได้ (ต้องหาร gap ลงตัว)<br>
+   <b>Long</b> ต้องใช้ subaccount แยกจาก zone Short (Deribit รวม long/short ของสัญญาเดียวกันใน sub เดียวเป็น position เดียว)</div>
+ </div>
+ <div class="card"><h2>2 · โหมด</h2>
+  <div class="fld">ส่งคำสั่งจริงได้<select id="live"><option value="false">false — ห้าม live</option><option value="true">true — อนุญาต live</option></select></div>
+  <div class="fld">Deribit<select id="testnet"><option value="false">mainnet</option><option value="true">testnet</option></select></div>
+  <div class="fld">MM rate ตั้งต้น <span class="u">%</span><input type="number" id="mmr" step="0.01"></div>
+  <details><summary>ค่าความปลอดภัย (ขั้นสูง)</summary>
+   <div class="fld">tol_frac<input type="number" id="tol_frac" step="0.05"></div>
+   <div class="fld">max_catchup<input type="number" id="max_catchup" step="1"></div>
+   <div class="fld">chase_frac<input type="number" id="chase_frac" step="0.01"></div>
+   <div class="fld">liq_buffer <span class="u">USD</span><input type="number" id="liq_buffer" step="100"></div>
+   <div class="fld">max_orders <span class="u">ตัว</span><input type="number" id="max_orders" step="1" min="0" max="94" title="วางเฉพาะออเดอร์ที่ใกล้ราคาที่สุดเท่านี้ตัว (Deribit รับได้ 100 ตัวต่อสัญญา) · 0 = วางทุกชั้น"></div>
+   <div class="fld">reconcile_sec<input type="number" id="reconcile_sec" step="5"></div>
+   <div class="fld">max_orders_per_cycle<input type="number" id="max_orders_per_cycle" step="1"></div>
+   <div class="fld">settle_sec (อ่าน 2 รอบห่าง)<input type="number" id="settle_sec" step="0.1"></div>
+   <div class="fld">debounce_sec<input type="number" id="debounce_sec" step="0.1"></div>
+   <div class="fld">pending_ttl<input type="number" id="pending_ttl" step="5"></div>
+   <div class="fld">flux_halt_sec<input type="number" id="flux_halt_sec" step="10"></div>
+   <div class="fld">order_spacing_sec<input type="number" id="order_spacing_sec" step="0.05"></div>
+   <div class="fld">throttle_max_sec<input type="number" id="throttle_max_sec" step="5"></div>
+   <div class="fld">heartbeat_sec (log ทำงานปกติ)<input type="number" id="heartbeat_sec" step="60"></div>
+   <div class="fld">summary_hours (สรุป Telegram · 0 = ปิด)<input type="number" id="summary_hours" step="1"></div>
+  </details>
+  <div class="info">MM rate ตั้งต้นใช้ตอนยังไม่มี position — มี position แล้วบอทและหน้านี้สอบเทียบจากบัญชีจริง</div>
+ </div>
+ <div class="card">
+  <div class="row" style="margin:0"><button class="btn pri" id="btnSave">💾 บันทึกไฟล์ zone</button><span class="dirty" id="dirty"></span></div>
+  <details><summary>ดูไฟล์ TOML</summary><pre id="toml" style="max-height:260px"></pre></details>
+ </div>
+</aside>
+<main>
+ <div id="msgs"></div>
+ <div class="kpis" id="kpis"></div>
+ <div class="two">
+  <div class="card"><h3>ควบคุมบอท <span id="stTag"></span></h3>
+   <div class="info" id="stLine" style="margin:0 0 8px"></div>
+   <div class="row">
+    <label class="ck"><input type="checkbox" id="ckAdopt"> --adopt-manual <span class="mut">(นับออเดอร์มือที่ตรงสูตรเป็นของบอท)</span></label>
+    <label class="ck" id="lbHalt" style="display:none"><input type="checkbox" id="ckHalt"> --clear-halt</label>
+    <label class="ck" title="รันโดยไม่ส่งคำสั่งจริง ดูใน log ว่าบอทจะทำอะไร"><input type="checkbox" id="ckDry"> dry-run</label>
+    <label class="ck" title="ข้ามด่าน liq ตอนเริ่ม (liq ตอน zone เต็มต่ำกว่า upper + liq_buffer) — ไม่แนะนำ"><input type="checkbox" id="ckForce"> <span class="neg">--force</span></label>
+   </div>
+   <div id="crashBar"></div>
+   <div class="row">
+    <button class="btn" id="btnCheck" title="อ่านบัญชีจริง บอกว่าบอทจะทำอะไร ไม่ส่งคำสั่ง">🔍 ตรวจ (check)</button>
+    <button class="btn go" id="btnStart">▶ เริ่ม LIVE</button>
+    <button class="btn stop" id="btnStop">■ หยุดบอท</button>
+    <button class="btn danger" id="btnClose">ปิด zone ถาวร</button>
+    <button class="btn pri" id="btnReopen" style="display:none">↺ เปิด zone นี้ใหม่</button>
+   </div>
+   <div class="info" id="ctlHint"></div>
+   <pre id="out" style="display:none"></pre>
+  </div>
+  <div class="card"><h3>บัญชี Deribit <span class="info" id="accAge" style="margin:0;font-weight:400"></span></h3>
+   <div class="grid2" id="acc"></div>
+   <div id="xfer"></div>
+   <div class="info">อ่านด้วย key ใน .env (อ่านอย่างเดียว) · key ไม่ถูกส่งมาที่หน้าเว็บ</div>
+  </div>
+ </div>
+ <div class="card"><h3>ออเดอร์ตามสูตร เทียบกับบน Deribit <span class="info" id="mInfo" style="margin:0;font-weight:400"></span></h3>
+  <div style="overflow-x:auto"><table id="tbl"></table></div>
+  <div id="extra"></div>
+ </div>
+ <div class="card"><h3>Log ของบอท <label class="ck" style="margin-left:auto"><input type="checkbox" id="ckLog" checked> อัปเดตอัตโนมัติ</label></h3>
+  <div id="fills"></div>
+  <pre id="log" style="max-height:380px">–</pre>
+ </div>
+</main></div>
+<div class="layout" id="fvView" style="display:none">
+<aside>
+ <div class="card"><h2>บอท Fixed Value (spot)</h2>
+  <select class="big" id="fvSel"></select>
+  <div class="row" style="margin-bottom:0"><span class="info" id="fvFileInfo" style="margin:0;flex:1"></span>
+   <button class="btn danger" id="fvDel" style="display:none;padding:4px 10px;font-size:12px">🗑 ลบไฟล์นี้</button></div>
+ </div>
+ <div class="card"><h2>1 · เป้าหมาย</h2>
+  <div class="fld">ชื่อ (ขึ้นใน Telegram)<input type="text" id="fvName"></div>
+  <div class="fld">ชื่อไฟล์<input type="text" id="fvFile"></div>
+  <div class="fld">Fix Value (มูลค่า BTC) <span class="u">USD</span><input type="number" id="fvValue" step="100"></div>
+  <div class="fld">Threshold แบบ<select id="fvMode"><option value="usd">USD คงที่</option><option value="pct">% ของ Fix Value</option></select></div>
+  <div class="fld"><span id="fvStepLbl">Threshold Δ</span> <span class="u" id="fvStepU">USD</span><input type="number" id="fvStep" step="10"></div>
+  <div class="fld">ไม้เล็กสุด <span class="u">USD</span><input type="number" id="fvMin" step="1"></div>
+  <div class="fld">ไม้ใหญ่สุด (0 = ไม่จำกัด) <span class="u">USD</span><input type="number" id="fvMax" step="100"></div>
+  <div class="row"><button class="btn" id="fvUseNow">ใช้มูลค่า BTC ตอนนี้เป็นเป้า</button></div>
+  <div class="info">มูลค่า BTC ห่าง Fix Value ถึง Δ → บอทขาย/ซื้อส่วนต่างกลับเข้าเป้าด้วย post-only · ราคากระโดดแรงจะแบ่งไม้ตาม "ไม้ใหญ่สุด"</div>
+ </div>
+ <div class="card"><h2>2 · โหมด</h2>
+  <div class="fld">ส่งคำสั่งจริงได้<select id="fvLive"><option value="false">false — ห้าม live</option><option value="true">true — อนุญาต live</option></select></div>
+  <div class="fld">Deribit<select id="fvTestnet"><option value="false">mainnet</option><option value="true">testnet</option></select></div>
+  <details><summary>ค่าขั้นสูง</summary>
+   <div class="fld">ไล่ราคาเมื่อห่างเกิน <span class="u">bps</span><input type="number" id="fvChase" step="1"></div>
+   <div class="fld">fee maker (สัดส่วน)<input type="number" id="fvFee" step="0.0001"></div>
+   <div class="fld">reconcile_sec<input type="number" id="fvReconcile" step="5"></div>
+   <div class="fld">flux_halt_sec<input type="number" id="fvFlux" step="10"></div>
+   <div class="fld">cash_accept_sec<input type="number" id="fvCash" step="1"></div>
+   <div class="fld">settle_sec<input type="number" id="fvSettle" step="0.1"></div>
+   <div class="fld">debounce_sec<input type="number" id="fvDebounce" step="0.1"></div>
+   <div class="fld">pending_ttl<input type="number" id="fvPending" step="5"></div>
+   <div class="fld">order_spacing_sec<input type="number" id="fvSpacing" step="0.05"></div>
+   <div class="fld">throttle_max_sec<input type="number" id="fvThrottle" step="5"></div>
+   <div class="fld">heartbeat_sec (log ทำงานปกติ)<input type="number" id="fvHeartbeat" step="60"></div>
+   <div class="fld">summary_hours (สรุป Telegram · 0 = ปิด)<input type="number" id="fvSummary" step="1"></div>
+  </details>
+ </div>
+ <div class="card">
+  <div class="row" style="margin:0"><button class="btn pri" id="fvSave">💾 บันทึกไฟล์บอท</button><span class="dirty" id="fvDirty"></span></div>
+  <details><summary>ดูไฟล์ TOML</summary><pre id="fvToml" style="max-height:260px"></pre></details>
+ </div>
+</aside>
+<main>
+ <div id="fvMsgs"></div>
+ <div class="kpis" id="fvKpis"></div>
+ <div class="two">
+  <div class="card"><h3>ควบคุมบอท <span id="fvTag"></span></h3>
+   <div class="info" id="fvStLine" style="margin:0 0 8px"></div>
+   <div class="row">
+    <label class="ck" title="มูลค่าห่างเป้า ≥ Δ ตอนเริ่ม → ยืนยันให้ปรับเข้าเป้าทันที"><input type="checkbox" id="fvRebal"> --rebalance-now</label>
+    <label class="ck" title="ยอด BTC เปลี่ยนนอกบอท (โอนเข้า/ออก) → ยอมรับยอดใหม่"><input type="checkbox" id="fvAccept"> --accept-balance</label>
+    <label class="ck" id="fvHaltLb" style="display:none"><input type="checkbox" id="fvHalt"> --clear-halt</label>
+    <label class="ck" title="รันโดยไม่ส่งคำสั่งจริง ดูใน log ว่าบอทจะทำอะไร"><input type="checkbox" id="fvDry"> dry-run</label>
+   </div>
+   <div id="fvCrash"></div>
+   <div class="row">
+    <button class="btn" id="fvCheck">🔍 ตรวจ (check)</button>
+    <button class="btn go" id="fvStart">▶ เริ่ม LIVE</button>
+    <button class="btn stop" id="fvStop">■ หยุดบอท</button>
+    <button class="btn danger" id="fvClose">ปิดบอทนี้</button>
+    <button class="btn pri" id="fvReopen" style="display:none">↺ เปิดบอทนี้ใหม่</button>
+   </div>
+   <div class="info" id="fvHint"></div>
+   <pre id="fvOut" style="display:none"></pre>
+  </div>
+  <div class="card"><h3>บัญชี spot <span class="info" id="fvAccAge" style="margin:0;font-weight:400"></span></h3>
+   <div class="grid2" id="fvAcc"></div>
+   <div class="info">อ่านด้วย key ของแท็บนี้ (อ่านอย่างเดียว) · ควรเป็น subaccount ที่ใช้กับบอทนี้อย่างเดียว</div>
+  </div>
+ </div>
+ <div class="card"><h3>ออเดอร์ที่บอทต้องมี เทียบกับบน Deribit</h3>
+  <div style="overflow-x:auto"><table id="fvTbl"></table></div>
+ </div>
+ <div class="card"><h3>บันได ถ้าราคาวิ่งทางเดียว <span class="info" id="fvLadNote" style="margin:0;font-weight:400">(จากยอดตอนนี้ · หัก fee แล้ว)</span></h3>
+  <div style="overflow-x:auto"><table id="fvLadder"></table></div>
+ </div>
+ <div class="card"><h3>Log ของบอท <label class="ck" style="margin-left:auto"><input type="checkbox" id="fvLogAuto" checked> อัปเดตอัตโนมัติ</label></h3>
+  <div id="fvFills"></div>
+  <pre id="fvLog" style="max-height:380px">–</pre>
+ </div>
+</main></div>
+<div class="layout" id="kzView" style="display:none">
+<aside>
+ <div class="card"><h2>บอท KZM Grid (spot)</h2>
+  <select class="big" id="kzSel"></select>
+  <div class="row" style="margin-bottom:0"><span class="info" id="kzFileInfo" style="margin:0;flex:1"></span>
+   <button class="btn danger" id="kzDel" style="display:none;padding:4px 10px;font-size:12px">🗑 ลบไฟล์นี้</button></div>
+ </div>
+ <div class="card"><h2>1 · กริด</h2>
+  <div class="fld">ชื่อ (ขึ้นใน Telegram)<input type="text" id="kzName"></div>
+  <div class="fld">ชื่อไฟล์<input type="text" id="kzFile"></div>
+  <div class="fld">Floor (ชั้นล่างสุด) <span class="u">USD</span><input type="number" id="kzFloor" step="500"></div>
+  <div class="fld">Ceiling (ขายชั้นบนสุด) <span class="u">USD</span><input type="number" id="kzCeil" step="500"></div>
+  <div class="fld">Gap (ระยะชั้น) <span class="u">USD</span><input type="number" id="kzGap" step="50"></div>
+  <div class="fld">ทุนรวม <span class="u">USD</span><input type="number" id="kzCap" step="100"></div>
+  <div class="info" id="kzCalc"></div>
+  <div class="info">ชั้น k ซื้อที่ floor + k·gap ขายที่ +gap · เริ่มแบบ <b>ratio</b>: ชั้นที่อยู่เหนือราคาตอนเริ่มซื้อทันที ชั้นละ = ทุนต่อชั้น ÷ ราคาเริ่ม (เหมือน Excel KZM) ·
+   ราคาต่ำกว่า floor = ถือ BTC เต็มกริด · เกิน ceiling = เงินสด 100%</div>
+ </div>
+ <div class="card"><h2>2 · โหมด</h2>
+  <div class="fld">ส่งคำสั่งจริงได้<select id="kzLive"><option value="false">false — ห้าม live</option><option value="true">true — อนุญาต live</option></select></div>
+  <div class="fld">Deribit<select id="kzTestnet"><option value="false">mainnet</option><option value="true">testnet</option></select></div>
+  <details><summary>ค่าขั้นสูง</summary>
+   <div class="fld">ออเดอร์รอที่ราคาชั้น ฝั่งละ<input type="number" id="kzMaxO" step="1"></div>
+   <div class="fld">ออเดอร์ไล่ราคา (ชั้นที่ทะลุแล้ว) ฝั่งละ<input type="number" id="kzMaxC" step="1"></div>
+   <div class="fld">ไม้เล็กสุด <span class="u">USD</span><input type="number" id="kzMin" step="1"></div>
+   <div class="fld">ไล่ราคาเมื่อห่างเกิน <span class="u">bps</span><input type="number" id="kzChase" step="1"></div>
+   <div class="fld">fee maker (สัดส่วน)<input type="number" id="kzFee" step="0.0001"></div>
+   <div class="fld">reconcile_sec<input type="number" id="kzReconcile" step="5"></div>
+   <div class="fld">flux_halt_sec<input type="number" id="kzFlux" step="10"></div>
+   <div class="fld">cash_accept_sec<input type="number" id="kzCash" step="1"></div>
+   <div class="fld">settle_sec<input type="number" id="kzSettle" step="0.1"></div>
+   <div class="fld">debounce_sec<input type="number" id="kzDebounce" step="0.1"></div>
+   <div class="fld">pending_ttl<input type="number" id="kzPending" step="5"></div>
+   <div class="fld">order_spacing_sec<input type="number" id="kzSpacing" step="0.05"></div>
+   <div class="fld">throttle_max_sec<input type="number" id="kzThrottle" step="5"></div>
+   <div class="fld">heartbeat_sec (log ทำงานปกติ)<input type="number" id="kzHeartbeat" step="60"></div>
+   <div class="fld">summary_hours (สรุป Telegram · 0 = ปิด)<input type="number" id="kzSummary" step="1"></div>
+  </details>
+ </div>
+ <div class="card">
+  <div class="row" style="margin:0"><button class="btn pri" id="kzSave">💾 บันทึกไฟล์บอท</button><span class="dirty" id="kzDirty"></span></div>
+  <details><summary>ดูไฟล์ TOML</summary><pre id="kzToml" style="max-height:260px"></pre></details>
+ </div>
+</aside>
+<main>
+ <div id="kzMsgs"></div>
+ <div class="kpis" id="kzKpis"></div>
+ <div class="two">
+  <div class="card"><h3>ควบคุมบอท <span id="kzTag"></span></h3>
+   <div class="info" id="kzStLine" style="margin:0 0 8px"></div>
+   <div class="row">
+    <label class="ck" title="เริ่มครั้งแรกต้องซื้อชั้นที่อยู่เหนือราคา → ยืนยัน"><input type="checkbox" id="kzRebal"> --rebalance-now</label>
+    <label class="ck" title="ยอด BTC เปลี่ยนนอกบอท (โอนเข้า/ออก) → ยอมรับยอดใหม่ (นับเข้าชั้น)"><input type="checkbox" id="kzAccept"> --accept-balance</label>
+    <label class="ck" id="kzHaltLb" style="display:none"><input type="checkbox" id="kzHalt"> --clear-halt</label>
+    <label class="ck" title="รันโดยไม่ส่งคำสั่งจริง ดูใน log ว่าบอทจะทำอะไร"><input type="checkbox" id="kzDry"> dry-run</label>
+   </div>
+   <div id="kzCrash"></div>
+   <div class="row">
+    <button class="btn" id="kzCheck">🔍 ตรวจ (check)</button>
+    <button class="btn go" id="kzStart">▶ เริ่ม LIVE</button>
+    <button class="btn stop" id="kzStop">■ หยุดบอท</button>
+    <button class="btn danger" id="kzClose">ปิดบอทนี้</button>
+    <button class="btn pri" id="kzReopen" style="display:none">↺ เปิดบอทนี้ใหม่</button>
+   </div>
+   <div class="info" id="kzHint"></div>
+   <pre id="kzOut" style="display:none"></pre>
+  </div>
+  <div class="card"><h3>บัญชี spot <span class="info" id="kzAccAge" style="margin:0;font-weight:400"></span></h3>
+   <div class="grid2" id="kzAcc"></div>
+   <div class="info">อ่านด้วย key ของแท็บนี้ (อ่านอย่างเดียว) · ควรเป็น subaccount ที่ใช้กับบอทนี้อย่างเดียว</div>
+  </div>
+ </div>
+ <div class="card"><h3>ชั้นรอบราคา <span class="info" id="kzLayNote" style="margin:0;font-weight:400"></span></h3>
+  <div style="overflow-x:auto"><table id="kzTbl"></table></div>
+  <div class="info">บอทวางจริงเฉพาะชั้นใกล้ราคา (ฝั่งละตาม "ออเดอร์รอ") และต้องอยู่ในกรอบราคา ~±2% ของ Deribit · ชั้นที่ราคาทะลุไปแล้ว (เช่นตอนเริ่ม) ไล่ราคาที่ bid/ask ทีละไม่กี่ชั้น</div>
+ </div>
+ <div class="card"><h3>Log ของบอท <label class="ck" style="margin-left:auto"><input type="checkbox" id="kzLogAuto" checked> อัปเดตอัตโนมัติ</label></h3>
+  <div id="kzFills"></div>
+  <pre id="kzLog" style="max-height:380px">–</pre>
+ </div>
+</main></div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const TOKEN = '__TOKEN__';
+const $ = id => document.getElementById(id);
+const fmt = (x, d = 0) => x !== null && x !== '' && isFinite(x) ? (+x).toLocaleString('en-US', {minimumFractionDigits: d, maximumFractionDigits: d}) : '–';
+const fnum = x => Number.isInteger(+x) ? String(+x) : String(+(+x).toFixed(8));
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+const DEF = {name: 'Beta2', file: 'new-zone', direction: 'short', lower: 82000, gap: 500, n: 12, upper: 88000, size: 1000, live: 'false', testnet: 'false', mmr: 1.26,
+  tol_frac: 0.25, max_catchup: 2, chase_frac: 0.05, liq_buffer: 500, max_orders: 90, reconcile_sec: 30, max_orders_per_cycle: 6,
+  settle_sec: 0.3, debounce_sec: 0.1, pending_ttl: 60, flux_halt_sec: 180, order_spacing_sec: 0.15, throttle_max_sec: 30, heartbeat_sec: 300, summary_hours: 12};
+const ADV = ['settle_sec', 'debounce_sec', 'pending_ttl', 'flux_halt_sec', 'order_spacing_sec', 'throttle_max_sec', 'heartbeat_sec', 'summary_hours'];
+const IDS = Object.keys(DEF), TXT = ['name', 'file', 'direction', 'live', 'testnet'];
+let ZONES = [], SEL = null, SAVED = null, ACC = null, S = {}, busy = false;
+let ACCTS = [], ACCT = '', USERS = {};           // บัญชีจาก .env · แท็บที่เลือก ('' = บัญชีหลัก) · ชื่อ subaccount จาก Deribit
+const ls = {get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }};
+const acctName = a => a.name || USERS[a.acct] || (a.acct ? a.acct : 'บัญชีหลัก');
+
+async function api(path, body) {
+  const r = await fetch(path, body === undefined ? {headers: {'X-Token': TOKEN}} :
+    {method: 'POST', headers: {'X-Token': TOKEN, 'Content-Type': 'application/json'}, body: JSON.stringify(body)});
+  const j = await r.json().catch(() => ({error: 'ตอบกลับไม่ใช่ JSON'}));
+  if (r.status === 404 || r.status === 403) oldServer();
+  if (!r.ok) throw new Error(r.status === 404 ? 'เซิร์ฟเวอร์หน้าเว็บเป็นโค้ดเก่า — ปิดหน้าต่าง Terminal ของ rbsi-ui.command แล้วดับเบิลคลิกใหม่' : j.error || r.status);
+  return j;
+}
+function oldServer() {
+  if ($('oldSrv')) return;
+  document.querySelector('.wrap').insertAdjacentHTML('afterbegin', '<div class="msg err" id="oldSrv">เซิร์ฟเวอร์หน้าเว็บที่เปิดอยู่เป็นโค้ดเก่า (หรือถูกรีสตาร์ท) — ' +
+    'กดรีเฟรชหน้านี้ก่อน ถ้ายังขึ้นอยู่ ให้ปิดหน้าต่าง Terminal ของ <b>rbsi-ui.command</b> แล้วดับเบิลคลิกใหม่ (ครั้งเดียว ต่อจากนี้อัปเดตเอง)</div>');
+}
+let VER = null;
+function toast(t, bad) { const el = $('toast'); el.textContent = t; el.className = 'toast' + (bad ? ' bad' : ''); el.style.display = 'block'; clearTimeout(toast.t); toast.t = setTimeout(() => el.style.display = 'none', 2600); }
+
+// ---------- ฟอร์ม ----------
+function fromZone(z) {
+  return {name: z.name, file: z.file, direction: z.direction || 'short', lower: z.lower, gap: z.gap, n: Math.round((z.upper - z.lower) / z.gap), upper: z.upper, size: z.size,
+    live: String(z.live), testnet: String(z.testnet), mmr: +(z.default_mmr * 100).toFixed(4), tol_frac: z.tol_frac, max_catchup: z.max_catchup,
+    chase_frac: z.chase_frac, liq_buffer: z.liq_buffer, max_orders: z.max_orders ?? 90, reconcile_sec: z.reconcile_sec, max_orders_per_cycle: z.max_orders_per_cycle,
+    ...Object.fromEntries(ADV.map(k => [k, z[k] ?? DEF[k]]))};
+}
+function fill(v) { for (const k of IDS) $(k).value = v[k] ?? ''; }
+function read() { for (const k of IDS) S[k] = TXT.includes(k) ? $(k).value.trim() : ($(k).value === '' ? NaN : parseFloat($(k).value)); }
+function fields() {
+  const z = SAVED || {};
+  return {acct: SAVED ? SAVED.acct : ACCT, name: S.name, file: S.file, direction: S.direction, lower: S.lower, upper: S.upper, gap: S.gap, size: S.size, live: S.live === 'true', testnet: S.testnet === 'true',
+    default_mmr: S.mmr / 100, tol_frac: S.tol_frac, max_catchup: S.max_catchup, chase_frac: S.chase_frac, liq_buffer: S.liq_buffer, max_orders: S.max_orders,
+    reconcile_sec: S.reconcile_sec, max_orders_per_cycle: S.max_orders_per_cycle, state_dir: z.state_dir,
+    ...Object.fromEntries(ADV.map(k => [k, S[k]]))};
+}
+const isDirty = () => { if (!SAVED) return true; const a = fromZone(SAVED); return IDS.some(k => String(a[k]) !== String(TXT.includes(k) ? S[k] : +S[k])); };
+// ทิศทาง zone (สูตรเดียวกับ grid.py): short เปิดด้วย sell ที่ lower + k·gap · long เปิดด้วย buy ที่ upper − k·gap
+const isLong = s => s.direction === 'long';
+const word = s => isLong(s) ? 'long' : 'short';
+const sides = s => isLong(s) ? {open: 'buy', close: 'sell'} : {open: 'sell', close: 'buy'};
+const openPx = (s, k) => isLong(s) ? s.upper - k * s.gap : s.lower + k * s.gap;
+const closePx = (s, k) => isLong(s) ? s.upper - (k - 1) * s.gap : s.lower + (k - 1) * s.gap;
+const heldOf = (s, pos) => (isLong(s) ? +pos || 0 : -(+pos || 0)) + 0;      // + 0: ไม่ให้แสดง -0
+const dist = (s, p) => isLong(s) ? s.upper - p : p - s.lower;          // ระยะจากกรอบฝั่ง position = 0
+const zoneId = s => `BTC${fnum(s.lower)}-${fnum(s.upper)}g${fnum(s.gap)}q${s.size}${isLong(s) ? 'L' : ''}`;
+const price = () => ACC ? +ACC.mark : NaN;
+function mRange(s, p) {
+  const n = Math.round((s.upper - s.lower) / s.gap), tol = s.tol_frac * s.gap, d = dist(s, p);
+  const lo = Math.floor((d - tol) / s.gap + 1e-12), hi = Math.ceil((d + tol) / s.gap - 1e-12);
+  return [Math.max(0, Math.min(n, lo)), Math.max(0, Math.min(n, hi))];
+}
+function localErrors(s) {
+  const e = [];
+  if (!(s.upper > s.lower && s.lower > 0)) e.push('กรอบบนต้องมากกว่ากรอบล่าง');
+  if (!(s.gap > 0)) e.push('gap ต้องมากกว่า 0');
+  else { const n = (s.upper - s.lower) / s.gap; if (Math.abs(n - Math.round(n)) > 1e-9) e.push(`(กรอบบน − กรอบล่าง) ${fmt(s.upper - s.lower)} ต้องหาร gap ${fmt(s.gap)} ลงตัว`); }
+  if (!(s.size >= 10) || s.size % 10) e.push('ขนาดต่อชั้นต้องเป็นทวีคูณของ 10 USD');
+  if (!(s.max_orders === 0 || (s.max_orders >= 4 && s.max_orders <= 94 && Number.isInteger(s.max_orders)))) e.push('max_orders ต้องเป็น 0 (วางทุกชั้น) หรือ 4–94 (Deribit รับได้ 100 ตัวต่อสัญญา)');
+  for (const k of ['lower', 'upper', 'gap']) if (isFinite(s[k]) && Math.abs(s[k] * 2 - Math.round(s[k] * 2)) > 1e-9) e.push(`${k} ต้องลงตัวกับ tick 0.5`);
+  if (!/^[A-Za-z0-9._-]+$/.test(s.file || '') || s.file.startsWith('.')) e.push('ชื่อไฟล์ใช้ได้แค่ a-z 0-9 . _ -');
+  return e;
+}
+
+// ---------- liq: สูตรเดียวกับ bot.projected_liq + liq.py ----------
+// short: liq อยู่เหนือ ต้อง ≥ upper + buffer · long: liq อยู่ใต้ ต้อง ≤ lower − buffer · ok = ผ่านด่านบอท · need = BTC ที่ต้องเติมให้ผ่าน
+function projLiq(s, a, nets) {
+  const n = Math.round((s.upper - s.lower) / s.gap), S0 = Math.max(0, heldOf(s, a.position)), M = +a.mark, posMM = +a.pos_mm || 0;
+  const r = S0 > 0 && posMM > 0 ? posMM * M / S0 : s.mmr / 100;
+  const eq = (+a.equity || 0) - Math.max(0, (+a.acc_mm || 0) - posMM);
+  const adds = []; for (let k = 1; k <= n; k++) { const rem = s.size - (nets[k] || 0); if (rem > 1e-9) adds.push([openPx(s, k), rem]); }
+  const E = +a.avg || M, up = S0 > 0 && E > 0 ? S0 * (1 / E - 1 / M) : 0;
+  const s2 = S0 + adds.reduce((x, y) => x + y[1], 0), inv2 = (S0 > 0 && E > 0 ? S0 / E : 0) + adds.reduce((x, y) => x + y[1] / y[0], 0);
+  if (isLong(s)) {
+    const wb = eq - up, den = wb + inv2, T = s.lower - s.liq_buffer, liq = s2 > 0 && den > 0 ? s2 * (1 + r) / den : null;
+    return {liq, r, T, ok: liq === null || liq <= T, need: T > 0 ? Math.max(0, s2 * (1 + r) / T - inv2 - wb) : Infinity};
+  }
+  const wb = eq + up, den = inv2 - wb, T = s.upper + s.liq_buffer, liq = s2 > 0 && den > 0 ? s2 * (1 - r) / den : null;
+  return {liq, r, T, ok: liq === null || liq >= T, need: Math.max(0, inv2 - s2 * (1 - r) / T - wb)};
+}
+
+// ---------- วาดหน้า ----------
+let prevT = null;
+function render() {
+  read();
+  const s = S, st = SAVED && SAVED.state, M = [], dirty = isDirty();
+  $('dirty').textContent = !SAVED ? 'ยังไม่ได้บันทึก (zone ใหม่)' : dirty ? '● มีการแก้ที่ยังไม่บันทึก' : '✓ ตรงกับไฟล์';
+  const errs = localErrors(s);
+  for (const k of IDS) $(k).classList.remove('bad');
+  if (errs.length) { $('msgs').innerHTML = `<div class="msg err">${errs.map(esc).join('<br>')}</div>`; $('kpis').innerHTML = ''; $('tbl').innerHTML = ''; renderCtl(); return; }
+  const n = Math.round((s.upper - s.lower) / s.gap), cap = n * s.size, zid = zoneId(s), p = price();
+  // TOML preview (ตรวจด้วย ZoneConfig ของบอทจริง)
+  clearTimeout(prevT); prevT = setTimeout(() => api('/api/preview', {fields: fields()}).then(r => $('toml').textContent = r.toml)
+    .catch(e => { $('toml').textContent = ''; $('msgs').insertAdjacentHTML('afterbegin', `<div class="msg err">${esc(e.message)}</div>`); }), 250);
+  // position ตอนนี้
+  const a = ACC && ACC.has_key ? ACC : null;
+  const [lo, hi] = isFinite(p) ? mRange(s, p) : [0, n];
+  let m = Math.max(lo, Math.min(hi, Math.ceil((isFinite(p) ? dist(s, p) : 0) / s.gap - 1e-9))), nets = {}, posOk = false;
+  const S0 = a ? heldOf(s, a.position) : 0;
+  if (a) {
+    const mp = S0 / s.size;
+    posOk = S0 >= 0 && Math.abs(mp - Math.round(mp)) < 1e-9;
+    if (!posOk) M.push(['err', `position ${fmt(a.position)} ไม่ใช่ ${word(s)} ทวีคูณของ ${fmt(s.size)} — บอทจะไม่เริ่ม`]);
+    else if (!(lo <= mp && mp <= hi)) M.push(['err', `position ${fmt(mp)} ชั้น ไม่สอดคล้องกับราคา ${fmt(p, 1)} (zone นี้ควร ${lo}–${hi} ชั้น) — บอทจะไม่เริ่ม`]);
+    else if (!(st && st.running)) M.push(['ok', `position ${fmt(a.position)} = ${fmt(mp)} ชั้น สอดคล้องกับราคา — รับช่วงได้`]);
+    if (posOk) m = Math.round(mp);
+    const live = st && st.zone_id === zid && ['active', 'halted'].includes(st.status) && !dirty;
+    if (live) nets = Object.fromEntries(Object.entries(st.nets).map(([k, v]) => [+k, v]));
+    // บัญชีไม้ในไฟล์ไม่ตรง position (มี fill ตอนบอทหยุด) → ใช้ position แทน ไม่งั้นนับชั้นที่เพิ่ง fill เป็นออเดอร์เปิดที่รอซ้ำ
+    if (Math.abs(Object.values(nets).reduce((x, y) => x + y, 0) - S0) > 1e-6) { nets = {}; for (let k = 1; k <= m; k++) nets[k] = s.size; }
+    const other = a.orders.filter(o => o.label.startsWith('rbsi_') && o.label.split('_')[1] !== zid);
+    if (other.length) M.push(['err', `บน Deribit มีออเดอร์ของบอท zone อื่น ${other.length} ตัว (${esc(other[0].label.split('_')[1])}) — ปิด zone เดิมก่อน (ปุ่ม "ปิด zone ถาวร" ของไฟล์นั้น) แล้วค่อยเริ่ม zone นี้`]);
+  } else if (ACC && !ACC.has_key) M.push(['warn', 'ไม่พบ DERIBIT_CLIENT_ID / SECRET ใน .env — แสดงได้แค่ราคา']);
+  const L = a ? projLiq(s, a, nets) : null;
+  const lg = isLong(s), edge = lg ? 'กรอบล่าง − liq_buffer' : 'กรอบบน + liq_buffer';
+  if (L && !L.ok) M.push(['err', `liq ถ้า zone เต็ม ≈ ${fmt(L.liq)} ${lg ? 'สูงกว่า' : 'ต่ำกว่า'} ${edge} (${fmt(L.T)}) — ต้องเติมอย่างน้อย ${fmt(L.need, 5)} BTC หรือลดขนาด (บอทจะไม่เริ่มถ้าไม่ผ่านด่านนี้)`]);
+  else if (L && L.liq !== null) M.push(['ok', `liq ถ้า zone เต็ม ≈ ${fmt(L.liq)} ${lg ? `ต่ำกว่ากรอบล่าง ${fmt(s.lower - L.liq)}` : `สูงกว่ากรอบบน ${fmt(L.liq - s.upper)}`} USD`]);
+  if (a && +a.available < 0.001) M.push(['warn', `available เหลือ ${fmt(a.available, 5)} BTC — ${sides(s).open} ตัวใหม่อาจถูกปฏิเสธเพราะ margin ไม่พอ`]);
+  if (isFinite(p) && (p < s.lower - 4 * s.gap || p > s.upper + 4 * s.gap)) M.push(['warn', 'ราคาปัจจุบันอยู่ห่างนอกกรอบมาก — ตรวจตัวเลขกรอบอีกครั้ง']);
+  const gapPct = s.gap / p * 100;
+  if (gapPct < 0.1) M.push(['warn', `gap ${fmt(gapPct, 3)}% ของราคา แคบมาก — กำไรต่อรอบใกล้ fee`]);
+  $('msgs').innerHTML = M.map(([c, t]) => `<div class="msg ${c}">${t}</div>`).join('');
+  const tile = (t, v, sub, c = '') => `<div class="kpi"><div class="t">${t}</div><div class="v ${c}">${v}</div><div class="s">${sub}</div></div>`;
+  const pair = s.size * s.gap / (p + s.gap) - 0.00015 * s.size * 2;
+  $('kpis').innerHTML = tile('จำนวนชั้น', n, `${fmt(s.lower)}–${fmt(s.upper)} ทีละ ${fmt(s.gap)}`) +
+    tile(`${lg ? 'Long' : 'Short'} สูงสุด`, `${fmt(cap)}`, `USD · ${fmt(cap / 10)} cont. · ${fmt(cap / (lg ? s.lower : s.upper), 4)} BTC ที่กรอบ${lg ? 'ล่าง' : 'บน'}`) +
+    tile('กำไรต่อคู่', isFinite(pair) ? `$${fmt(pair, 2)}` : '–', `gap ${fmt(gapPct, 2)}% หัก maker ×2`, pair > 0 ? 'pos' : 'neg') +
+    tile('Liq ถ้า zone เต็ม', L && L.liq ? fmt(L.liq) : '–', L ? `ต้อง ${lg ? '≤' : '≥'} ${fmt(L.T)} · MM ${fmt(L.r * 100, 3)}%` : 'รอข้อมูลบัญชี', L && L.liq ? (L.ok ? 'pos' : 'neg') : '') +
+    tile('ต้องเติม (ถึงด่านบอท)', L ? (L.need > 0 ? `${fmt(L.need, 5)}` : 'พอแล้ว') : '–', L ? (L.need > 0 ? `BTC · ≈ $${fmt(L.need * p)} ให้ liq ${lg ? '≤' : '≥'} ${fmt(L.T)}` : 'ไม่ต้องเติม') : '', L ? (L.need > 0 ? 'neg' : 'pos') : '');
+  renderOrders(s, n, m, lo, hi, zid, p, a);
+  renderCtl();
+}
+
+function renderOrders(s, n, m, lo, hi, zid, p, a) {
+  $('mInfo').textContent = isFinite(p) ? `· ราคา ${fmt(p, 1)} · ${word(s)} ${m} ชั้น (สอดคล้องได้ ${lo}–${hi})` : '';
+  const orders = a ? a.orders.slice() : [], used = new Set();
+  const lab = k => `rbsi_${zid}_${String(k).padStart(3, '0')}`;
+  let rows = '<thead><tr><th>ชั้น</th><th>ตามสูตร</th><th>ราคา</th><th>ขนาด</th><th>บน Deribit</th></tr></thead><tbody>';
+  const nowRow = `<tr class="now"><td colspan="5">── ราคาปัจจุบัน ${fmt(p, 1)} ──</td></tr>`, sd = sides(s), lg = isLong(s), out = [];
+  // หน้าต่างออเดอร์ (grid.window_ranks): บอทวางเฉพาะ max_orders ตัวที่ใกล้ราคาที่สุด · ตัวที่วางแล้วเก็บได้ถึงอันดับ +6
+  const pxOf = k => k <= m ? closePx(s, k) : openPx(s, k);
+  const N = s.max_orders > 0 && n > s.max_orders && isFinite(p) ? s.max_orders : 0;
+  const rankOf = {}; if (N) Array.from({length: n}, (_, i) => i + 1).sort((a, b) => Math.abs(pxOf(a) - p) - Math.abs(pxOf(b) - p) || pxOf(a) - pxOf(b)).forEach((k, i) => rankOf[k] = i);
+  $('mInfo').textContent += N ? ` · หน้าต่าง ${N} ออเดอร์ใกล้ราคา (จาก ${n})` : '';
+  // เรียงราคาจากบนลงล่าง: short = ชั้น n→1 · long = ชั้น 1→n · เส้นราคาปัจจุบันอยู่ระหว่างชั้นที่ถือกับชั้นที่ว่าง
+  for (const k of Array.from({length: n}, (_, i) => lg ? i + 1 : n - i)) {
+    const held = k <= m, side = held ? sd.close : sd.open, px = held ? closePx(s, k) : openPx(s, k);
+    let o = orders.find(o => !used.has(o.id) && o.label === lab(k) && o.side === side), how = 'label';
+    if (!o) { o = orders.find(o => !used.has(o.id) && !o.label && o.side === side && Math.abs(o.price - px) < 1e-6 && Math.abs(o.amount - s.size) < 1e-9); how = 'มือ'; }
+    if (o) used.add(o.id);
+    const out_ = N && rankOf[k] >= N;
+    const cell = !a ? '<span class="mut">–</span>' : !o ? (out_ ? '<span class="mut">รอเข้าหน้าต่าง (ไกลราคา)</span>' : '<span class="neg">✗ ไม่มี</span>') :
+      `<span class="pos">✓</span> ${o.side.toUpperCase()} ${fmt(o.price, 1)} × ${fmt(o.amount - o.filled)}${Math.abs(o.price - px) > 1e-6 ? ' <span class="org">(ไล่ราคา)</span>' : ''} <span class="mut">${how === 'มือ' ? 'ออเดอร์มือ' : 'ของบอท'}</span>`;
+    const tag = side === 'buy' ? `<span class="tag b">BUY${held ? ' reduce-only' : ''}</span>` : `<span class="tag s">SELL${held ? ' reduce-only' : ''}</span>`;
+    out.push(`<tr><td>${k}</td><td>${tag}</td><td>${fmt(px, 1)}</td><td>${fmt(s.size)}</td><td style="text-align:left">${cell}</td></tr>`);
+  }
+  if (isFinite(p)) out.splice(lg ? m : n - m, 0, nowRow);
+  $('tbl').innerHTML = rows + out.join('') + '</tbody>';
+  const extra = orders.filter(o => !used.has(o.id));
+  $('extra').innerHTML = extra.length ? `<div class="msg warn" style="margin-top:10px">ออเดอร์บน Deribit ที่ไม่ตรงสูตร zone นี้ ${extra.length} ตัว (ถ้าเริ่มด้วย --adopt-manual บอทจะยกเลิก):<br>` +
+    extra.map(o => `<span class="mono">${o.side.toUpperCase()} ${fmt(o.price, 1)} × ${fmt(o.amount)} ${esc(o.label || 'ไม่มี label')}</span>`).join('<br>') + '</div>' : '';
+}
+
+function renderCtl() {
+  const st = SAVED && SAVED.state, dirty = isDirty(), running = !!(st && st.running);
+  const status = st ? st.status : 'new';
+  $('stTag').innerHTML = !SAVED ? '<span class="tag off">ยังไม่ได้บันทึก</span>' : running ? runTag(st) :
+    status === 'halted' ? '<span class="tag halt">🛑 halt</span>' : status === 'closed' ? '<span class="tag off">ปิดแล้ว</span>' : '<span class="tag off">⚪ ไม่ได้รัน</span>';
+  const hb = st && st.heartbeat, age = hb && hb.ts ? Date.now() / 1000 - hb.ts : null;
+  $('stLine').innerHTML = !SAVED ? 'บันทึกไฟล์ก่อนจึงสั่งบอทได้' :
+    `zone <b class="mono">${esc(st.zone_id)}</b> · สถานะ <b>${esc(status)}</b>${st.halt_reason ? ' — ' + esc(st.halt_reason) : ''}` +
+    (hb && hb.ts ? `<br>ตรวจล่าสุด <b class="${running && age > 120 ? 'neg' : ''}">${fmt(age)} วิที่แล้ว</b> · position ${fmt(hb.position)} · ออเดอร์ของบอท ${hb.own_orders}/${st.n} · ความเสี่ยง ${fmt(hb.exposure)}/${fmt(st.cap)}` : '');
+  $('lbHalt').style.display = status === 'halted' ? '' : 'none';
+  if (SAVED && !$('ckAdopt').dataset.touched) $('ckAdopt').checked = true;
+  const can = SAVED && !dirty && !busy;
+  $('btnCheck').disabled = !can || running || status === 'closed';
+  const dry = $('ckDry').checked;
+  $('btnStart').disabled = !can || running || status === 'closed' || (S.live !== 'true' && !dry);
+  $('btnStart').textContent = dry ? '▶ เริ่ม DRY-RUN' : '▶ เริ่ม LIVE';
+  $('ckForce').disabled = dry;
+  $('crashBar').innerHTML = crashHtml(st);
+  $('btnStop').disabled = !SAVED || !running || busy;
+  $('btnClose').disabled = !SAVED || running || status === 'closed' || busy;
+  $('btnClose').style.display = status === 'closed' ? 'none' : '';
+  $('btnReopen').style.display = SAVED && status === 'closed' && !dirty ? '' : 'none';
+  $('btnReopen').disabled = busy || running;
+  $('ctlHint').innerHTML = !SAVED ? '' : dirty ? 'แก้ฟอร์มแล้วยังไม่บันทึก — บันทึกก่อนจึงตรวจ/เริ่มได้' :
+    running ? 'บอทรันอยู่ — จะแก้ zone ต้อง ■ หยุดบอทก่อน · "ตรวจ" ใช้ไม่ได้ระหว่างรัน (ใช้ lock เดียวกับบอท) ดูสถานะจาก log ด้านล่างแทน' :
+    status === 'closed' ? 'zone นี้ปิดแล้ว — กด ↺ เปิด zone นี้ใหม่ เพื่อใช้กรอบ/gap/ขนาดเดิม (บอทจะรับช่วงจาก position และออเดอร์บน Deribit ตอนนี้ใหม่ทั้งหมด)' :
+    S.live !== 'true' && !dry ? 'ไฟล์นี้ยังไม่อนุญาต live — ตั้ง "ส่งคำสั่งจริงได้ = true" แล้วบันทึก (หรือติ๊ก dry-run เพื่อทดลองโดยไม่ส่งคำสั่ง)' :
+    'ลำดับแนะนำ: 🔍 ตรวจ → อ่านผล → ▶ เริ่ม · บอทรันเป็น process แยก ปิดหน้านี้แล้วบอทยังรันต่อ';
+}
+
+function runTag(st) {
+  return st.mode === 'dry' ? `<span class="tag" style="background:rgba(245,158,61,.16);color:var(--orange)">🟡 DRY-RUN · PID ${st.pids.join(', ') || '?'}</span>`
+    : `<span class="tag run">🟢 กำลังรัน LIVE · PID ${st.pids.join(', ') || '?'}</span>`;
+}
+function crashHtml(st) {
+  const c = st && !st.running && st.crash;
+  return c ? `<div class="msg err">💥 บอทหยุดเพราะ error (${esc(c.when)}): <b class="mono">${esc(c.error)}</b>
+    <details><summary>ดูรายละเอียด</summary><pre style="max-height:220px">${esc(c.tail)}</pre></details>ส่ง error นี้ให้ผู้ช่วยดู แล้วค่อยเริ่มบอทใหม่</div>` : '';
+}
+function renderAcc() {
+  const a = ACC;
+  if (!a) return;
+  $('cPx').textContent = fmt(a.mark, 1);
+  $('cSrc').textContent = `BTC-PERPETUAL mark${a.testnet ? ' · TESTNET' : ''}`;
+  $('cUser').textContent = a.has_key ? (a.user || '(ไม่ทราบชื่อ)') + (a.testnet ? ' · testnet' : '') : 'ไม่มี key';
+  $('accAge').textContent = '· ' + new Date(a.ts * 1000).toLocaleTimeString('th-TH');
+  if (!a.has_key) { $('acc').innerHTML = '<div class="k">ไม่มี key ใน .env</div><div></div>'; return; }
+  const S0 = Math.max(0, -(+a.position || 0)), r = S0 > 0 && +a.pos_mm > 0 ? a.pos_mm * a.mark / S0 : null;
+  const own = a.orders.filter(o => o.label.startsWith('rbsi_')).length;
+  const row = (k, v, c = '') => `<div class="k">${k}</div><div class="v ${c}">${v}</div>`;
+  $('acc').innerHTML = row('บัญชี', esc(a.user || '–') + (a.acc_type ? ` <span class="mut">(${esc(a.acc_type)})</span>` : '')) +
+    row('Equity', `${fmt(a.equity, 6)} BTC`) + row('Available', `${fmt(a.available, 6)} BTC`, +a.available < 0.001 ? 'neg' : '') +
+    row('Position', `${fmt(a.position)} USD`) + row('Avg entry', a.avg ? fmt(a.avg, 1) : '–') +
+    row('uPnL', `${fmt(a.upnl, 6)} BTC`, +a.upnl >= 0 ? 'pos' : 'neg') + row('MM rate (สอบเทียบ)', r ? `${fmt(r * 100, 3)}%` : '– (ไม่มี position)') +
+    row('Liq ตอนนี้ (Deribit)', a.pos_liq && a.pos_liq > 0 ? fmt(a.pos_liq) : '–') +
+    row('ออเดอร์เปิด', `${a.orders.length} <span class="mut">(label บอท ${own} · อื่น ${a.orders.length - own})</span>`);
+}
+
+// โอนออกได้เท่าไร (ออเดอร์ของบอทไม่ถูกยกเลิก) — สูตร IM ของ Deribit ใน rbsi_bot/transfer.py
+async function loadXfer() {
+  const el = $('xfer'), file = SAVED && SAVED.file;
+  if (!file || !ACC || !ACC.has_key) { el.innerHTML = ''; return; }
+  try {
+    const x = await api(`/api/transfer?file=${encodeURIComponent(file)}`);
+    if (!SAVED || SAVED.file !== file) return;
+    if (x.error) { el.innerHTML = ''; return; }
+    const usd = b => `<span class="mut">(~$${fmt(b * x.mark, 2)})</span>`, row = (k, v, c = '') => `<div class="k">${k}</div><div class="v ${c}">${v}</div>`;
+    const locked = x.withdrawable !== null && x.withdrawable < x.available - 1e-6;   // ต่างกันหลักสุดท้ายจากการปัด ไม่นับ
+    const pct = (v, d = 2) => v === null || v === undefined ? '–' : fmt(v * 100, d) + '%', prem = pct(x.prem, 1);
+    el.innerHTML = `<h3 style="margin:12px 0 6px">💸 โอนออกได้ (เผื่อวางเพิ่ม ${x.layers} ไม้ + premium แกว่ง ${prem})</h3><div class="grid2">` +
+      (x.topup > 0
+        ? row('⚠️ ควรเติม', `<b>${fmt(x.topup, 6)} BTC</b> ${usd(x.topup)}`, 'neg') + row('โอนออกได้', '0 — ห้ามโอนออก', 'neg')
+        : row('โอนออกได้', `<b>${fmt(x.transferable, 6)} BTC</b> ${usd(x.transferable)}`, x.transferable > 0 ? 'pos' : 'neg')) +
+      row('IM ตอนนี้', pct(x.im_pct), x.im_pct >= 1 ? 'neg' : '') +
+      row('Available ตอนนี้', `${fmt(x.available, 6)} BTC <span class="mut">· premium ตอนนี้ ${pct(x.prem_now, 3)}</span>`) +
+      row('Available ต่ำสุดในกรอบ', `${fmt(x.worst_available, 6)} BTC <span class="mut">ที่ราคา ${fmt(x.worst_price)} ถ้า premium แกว่งไปทางเสียเปรียบ ${prem}</span>`, x.worst_available < 0 ? 'neg' : '') +
+      row('เผื่อวางเพิ่ม', `${fmt(x.layer_btc, 6)} BTC <span class="mut">(${x.layers} ไม้)</span>`) +
+      row('ถอน/โอนได้ (Deribit)', `${fmt(x.withdrawable, 6)} BTC` + (locked ? ' <span class="mut">ติดกำไรระหว่างวัน (session profit) — ปลดหลัง settlement 08:00 UTC = 15:00 น.</span>' : '') +
+        ' <span class="mut">(Deribit ยอมให้โอนจน IM ชน 100% — ห้ามโอนตามยอดนี้)</span>') +
+      row('Liq หลังโอน', x.liq_after ? fmt(x.liq_after) + ' <span class="mut">(นอกกรอบ — ไม่มีออเดอร์เปิดให้ยกเลิกแล้ว)</span>' : '<span class="mut">ไม่อยู่ในช่วงกรอบ ± 2 ชั้น</span>') +
+      `</div><div class="info">Deribit ยกเลิกออเดอร์เปิด (ไม่ใช่ reduce-only) เมื่อ IM > margin balance · IM ของ Deribit คิดขาดทุนระหว่างทางจากราคา index ไปถึงทุกออเดอร์เปิด ราคาวิ่งในกรอบจึงไม่ลด available
+        แต่ premium (mark − index) ที่แกว่งไปทางเสียเปรียบลดได้ (short: premium บวก · long: ลบ) · ยังไม่รวม fee / funding ขาลบ · คิดเฉพาะ zone นี้ (ถ้า sub เดียวกันมีบอทอื่นใช้ไม่ได้)</div>`;
+  } catch (e) { el.innerHTML = `<div class="info neg">คำนวณโอนออกไม่ได้: ${esc(e.message)}</div>`; }
+}
+
+// ---------- โหลดข้อมูล ----------
+async function loadZones(keepForm) {
+  const r = await api('/api/zones');
+  if (r.ver === undefined) oldServer();
+  else if (VER === null) VER = r.ver;
+  else if (r.ver !== VER && !busy) { location.reload(); return; }     // โค้ดอัปเดต → โหลดหน้าใหม่เอง
+  ZONES = r.zones.filter(z => (z.acct || '') === ACCT);
+  renderTabs(r.zones);
+  const sel = $('selFile'), cur = SEL;
+  sel.innerHTML = ZONES.map(z => `<option value="${esc(z.file)}">${z.error ? '⚠️' : z.state.running ? '🟢' : z.state.status === 'halted' ? '🛑' : z.state.status === 'closed' ? '⚫' : '⚪'} ${esc(z.file)}${z.name ? ' — ' + esc(z.name) : ''}</option>`).join('') +
+    '<option value="__new__">＋ zone ใหม่</option>';
+  if (cur && (cur === '__new__' || ZONES.some(z => z.file === cur))) sel.value = cur;
+  else { const run = ZONES.find(z => z.state && z.state.running); sel.value = (run || ZONES.find(z => !z.error) || {file: '__new__'}).file; }
+  SEL = sel.value;
+  SAVED = ZONES.find(z => z.file === SEL && !z.error) || null;
+  if (!keepForm) { $('ckAdopt').dataset.touched = ''; const a = ACCTS.find(a => a.acct === ACCT); fill(SAVED ? fromZone(SAVED) : {...DEF, name: a ? acctName(a) : DEF.name, file: 'new-zone'}); }
+  $('fileInfo').innerHTML = SAVED ? `zones/${esc(SAVED.file)}.toml` : 'zone ใหม่ — กรอกแล้วกดบันทึก';
+  const zf = ZONES.find(z => z.file === SEL);
+  $('btnDel').style.display = zf ? '' : 'none';
+  $('btnDel').disabled = !!(zf && zf.state && zf.state.running);
+  $('btnDel').title = $('btnDel').disabled ? 'บอทของไฟล์นี้กำลังรัน — หยุดก่อนลบ' : 'ย้ายไฟล์ไป zones/.bak/ (กู้คืนได้)';
+}
+// ดึงบัญชีล่วงหน้าตอนสลับแท็บ (พร้อมกับโหลดรายการ zone) — ใช้ผลนั้นถ้า URL ตรงกัน (testnet ไม่เปลี่ยนหลังเติมฟอร์ม)
+let ACCP = null;
+function accUrl(base, tn) { return `${base}?acct=${encodeURIComponent(ACCT)}&testnet=${$(tn).value}`; }
+function prefetchAcc(base, tn) { const url = accUrl(base, tn), p = api(url); p.catch(() => {}); ACCP = {url, p, t: Date.now()}; }
+function accReq(base, tn) { const url = accUrl(base, tn), p = ACCP && ACCP.url === url && Date.now() - ACCP.t < 10000 ? ACCP.p : api(url); ACCP = null; return p; }
+async function loadAcc() {
+  const want = ACCT;
+  try { const a = await accReq('/api/account', 'testnet'); if (want !== ACCT) return; ACC = a; if (a.user) USERS[want] = a.user; renderAcc(); loadXfer(); }
+  catch (e) { $('cUser').textContent = 'ดึงบัญชีไม่สำเร็จ'; $('acc').innerHTML = `<div class="k neg">${esc(e.message)}</div><div></div>`; }
+  render();
+}
+async function loadLog() {
+  if (!SAVED || !$('ckLog').checked) return;
+  try {
+    const r = await api(`/api/log?file=${encodeURIComponent(SAVED.file)}`), el = $('log'), atEnd = el.scrollTop + el.clientHeight >= el.scrollHeight - 30;
+    el.textContent = r.log || '(ยังไม่มี log)';
+    if (atEnd) el.scrollTop = el.scrollHeight;
+  } catch (e) {}
+  const f = SAVED.state.fills || [];
+  $('fills').innerHTML = f.length ? '<div class="info" style="margin:0 0 6px">fill ล่าสุด: ' + f.slice(-5).reverse().map(x =>
+    `<span class="mono">${new Date(x.ts).toLocaleString('th-TH', {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'})} ${x.side.toUpperCase()} ${fmt(x.price, 1)}×${fmt(x.amount)} ชั้น ${x.k}</span>`).join(' · ') + '</div>' :
+    '<div class="info" style="margin:0 0 6px">ยังไม่มี fill</div>';
+}
+
+// ---------- ปุ่ม ----------
+function show(out) { $('out').style.display = 'block'; $('out').textContent = out; }
+async function act(btn, fn) {
+  busy = true; btn.classList.add('spin'); renderCtl();
+  try { await fn(); } catch (e) { show('❌ ' + e.message); toast(e.message, true); }
+  busy = false; btn.classList.remove('spin');
+  await loadZones(true); render(); loadLog();
+}
+// ---------- แท็บบัญชี ----------
+let ALLZ = [];
+function renderTabs(all) {
+  ALLZ = all || ALLZ;
+  const known = new Set(ACCTS.map(a => a.acct));
+  const orphan = [...new Set(ALLZ.concat(ALLF, ALLK).map(z => z.acct || '').filter(x => !known.has(x)))];
+  const tabs = ACCTS.map(a => ({acct: a.acct, label: acctName(a), ready: a.ready})).concat(orphan.map(x => ({acct: x, label: `⚠️ ไม่มี key (${x})`, ready: false})));
+  $('tabs').innerHTML = tabs.map(t => {
+    const zs = ALLZ.concat(ALLF, ALLK).filter(z => (z.acct || '') === t.acct && z.state), uid = z => z.state.zone_id || z.state.fv_id;
+    const run = new Set(zs.filter(z => z.state.running).map(uid)).size, halt = zs.filter(z => z.state.status === 'halted').length;   // นับบอทไม่ซ้ำ (หลายไฟล์ชี้ zone เดียวกันได้)
+    const badge = run ? `<span class="b">🟢 ${run}</span>` : halt ? '<span class="b">🛑</span>' : zs.length ? `<span class="b">⚪ ${zs.length}</span>` : '';
+    return `<button class="tab${t.acct === ACCT && $('settings').style.display === 'none' ? ' on' : ''}" data-acct="${esc(t.acct)}">${esc(t.label)}${badge}</button>`;
+  }).join('') + `<button class="tab add${$('settings').style.display !== 'none' ? ' on' : ''}" id="tabAdd">⚙️ ตั้งค่า (API key · Telegram)</button>`;
+  for (const b of document.querySelectorAll('.tab[data-acct]')) b.onclick = () => selectAcct(b.dataset.acct);
+  $('tabAdd').onclick = openSettings;
+}
+async function selectAcct(acct) {
+  $('settings').style.display = 'none'; $('modes').style.display = '';
+  if (acct === ACCT && (ACC || FVACC || KZACC)) { setMode(MODE); renderTabs(); return; }
+  ACCT = acct; ls.set('rbsi-ui-acct', acct); SEL = null; ACC = null; FVSEL = null; FVACC = null; FVP = null; KZSEL = null; KZACC = null; KZP = null;
+  $('out').style.display = 'none'; $('fvOut').style.display = 'none'; $('kzOut').style.display = 'none';
+  $('acc').innerHTML = $('fvAcc').innerHTML = $('kzAcc').innerHTML = '<div class="k">กำลังโหลด…</div><div></div>';
+  $('xfer').innerHTML = '';
+  setMode(defaultMode(acct));
+}
+async function loadAccounts() {
+  ACCTS = (await api('/api/accounts')).accounts;
+  await Promise.all(ACCTS.filter(a => a.ready && !a.name && !USERS[a.acct]).map(a =>
+    api(`/api/account?acct=${encodeURIComponent(a.acct)}&testnet=${a.testnet}`).then(x => { if (x.user) USERS[a.acct] = x.user; }).catch(() => {})));
+}
+function openSettings() {
+  $('settings').style.display = ''; $('mainLayout').style.display = 'none'; $('fvView').style.display = 'none'; $('kzView').style.display = 'none'; $('modes').style.display = 'none';
+  renderTabs(); renderKeys(); loadTg();
+}
+function renderKeys() {
+  const all = ALLZ.concat(ALLF, ALLK);
+  $('keyTbl').innerHTML = '<thead><tr><th>ชื่อแท็บ</th><th>ใน .env</th><th>subaccount</th><th>client id</th><th>บอท</th><th></th></tr></thead><tbody>' + ACCTS.map(a => {
+    const bots = all.filter(z => (z.acct || '') === a.acct), run = new Set(bots.filter(z => z.state && z.state.running).map(z => z.state.zone_id || z.state.fv_id)).size;
+    return `<tr><td>${esc(acctName(a))}</td><td class="mono">DERIBIT_CLIENT_ID${a.acct ? '_' + esc(a.acct) : ''}</td><td>${esc(USERS[a.acct] || '–')}${a.testnet ? ' (testnet)' : ''}</td>` +
+      `<td class="mono">${esc(a.id_hint)}</td><td>${bots.length}${run ? ` <span class="pos">🟢 ${run}</span>` : ''}</td>` +
+      `<td><button class="btn danger" style="padding:3px 9px;font-size:12px" data-rm="${esc(a.acct)}" ${run ? 'disabled title="หยุดบอทก่อน"' : ''}>ลบ</button></td></tr>`;
+  }).join('') + '</tbody>';
+  for (const b of document.querySelectorAll('[data-rm]')) b.onclick = async () => {
+    const a = ACCTS.find(x => x.acct === b.dataset.rm), n = all.filter(z => (z.acct || '') === a.acct).length;
+    if (!confirm(`ลบ API key ของ "${acctName(a)}" ออกจาก .env ?\n\n• สำรอง .env เดิมไว้ก่อน (กู้คืนได้)\n• ไฟล์ zone/บอทของบัญชีนี้ ${n} ไฟล์ยังอยู่ แต่จะใช้ไม่ได้จนกว่าจะเพิ่ม key กลับ\n• ควรลบ key ในหน้า API ของ Deribit ด้วยถ้าเลิกใช้แล้ว`)) return;
+    try { await api('/api/key/remove', {acct: a.acct}); toast('ลบ key แล้ว'); await loadAccounts(); if (!ACCTS.some(x => x.acct === ACCT)) ACCT = ACCTS[0] ? ACCTS[0].acct : ''; renderTabs(); renderKeys(); }
+    catch (e) { toast(e.message, true); }
+  };
+}
+async function loadTg() {
+  const row = (k, v, c = '') => `<div class="k">${k}</div><div class="v ${c}">${v}</div>`;
+  try {
+    const t = await api('/api/tg/status');
+    $('tgInfo').innerHTML = row('บอท', t.has_token ? (t.token_ok ? `${esc(t.bot)} <span class="mut">(${esc(t.bot_name || '')})</span>` : `<span class="neg">token ใช้ไม่ได้</span>`) : '<span class="neg">ยังไม่มี token</span>') +
+      row('chat id', t.has_chat ? `ตั้งแล้ว <span class="mono">${esc(t.chat_hint)}</span>` : '<span class="neg">ยังไม่ได้ตั้ง</span>') +
+      row('สถานะ', t.has_token && t.token_ok && t.has_chat ? '<span class="pos">✅ พร้อมใช้ (ใช้ค่าจาก .env เดิม)</span>' : '<span class="org">ยังไม่ครบ</span>');
+  } catch (e) { $('tgInfo').innerHTML = row('error', esc(e.message), 'neg'); }
+}
+function tgShow(t) { $('tgOut').style.display = 'block'; $('tgOut').textContent = t; }
+$('tgSaveTok').onclick = async () => { try { const r = await api('/api/tg/token', {token: $('tgTok').value}); $('tgTok').value = ''; tgShow(`✅ บันทึก token แล้ว — ${r.bot}`); loadTg(); } catch (e) { tgShow('❌ ' + e.message); } };
+$('tgFind').onclick = async () => {
+  try {
+    const r = await api('/api/tg/chats', {});
+    if (!r.chats.length) { tgShow('ยังไม่เห็นข้อความ — เปิด Telegram ทักบอท (พิมพ์ /start) แล้วกดใหม่'); return; }
+    $('tgChats').innerHTML = r.chats.map(c => `<option value="${esc(c.id)}">${esc(c.id)} (${esc(c.name)})</option>`).join('');
+    $('tgChats').style.display = $('tgSaveChat').style.display = ''; tgShow(`เจอ ${r.chats.length} chat — เลือกแล้วกด "ใช้ chat นี้"`);
+  } catch (e) { tgShow('❌ ' + e.message); }
+};
+$('tgSaveChat').onclick = async () => { try { await api('/api/tg/chat', {chat_id: $('tgChats').value}); tgShow('✅ บันทึก chat id แล้ว'); loadTg(); } catch (e) { tgShow('❌ ' + e.message); } };
+$('tgTest').onclick = async () => { try { await api('/api/tg/test', {}); tgShow('✅ ส่งข้อความทดสอบแล้ว — ดูใน Telegram'); } catch (e) { tgShow('❌ ' + e.message); } };
+$('btnKeyCancel').onclick = () => selectAcct(ACCT);
+$('btnKeyAdd').onclick = async () => {
+  const b = $('btnKeyAdd'); b.disabled = true; b.classList.add('spin'); $('kOut').style.display = 'block'; $('kOut').textContent = 'กำลัง login ทดสอบกับ Deribit…';
+  try {
+    const r = await api('/api/key/add', {name: $('kName').value, client_id: $('kId').value, client_secret: $('kSec').value, testnet: $('kNet').value === 'true'});
+    $('kSec').value = ''; $('kId').value = ''; $('kName').value = '';
+    $('kOut').textContent = `✅ บันทึกแล้ว — ${r.user || '?'}${r.type ? ` (${r.type})` : ''} · ใน .env เป็น DERIBIT_CLIENT_ID_${r.acct}`;
+    toast('เพิ่ม API key แล้ว'); await loadAccounts(); setTimeout(() => selectAcct(r.acct), 900);
+  } catch (e) { $('kOut').textContent = '❌ ' + e.message; }
+  b.disabled = false; b.classList.remove('spin');
+};
+
+$('btnSave').onclick = () => act($('btnSave'), async () => {
+  read();
+  const f = fields(), exists = ZONES.some(z => z.file === f.file);
+  if (exists && !confirm(`เขียนทับ zones/${f.file}.toml ?\n(ไฟล์เดิมสำรองไว้ใน zones/.bak/)`)) return;
+  if (SAVED && SAVED.state.status !== 'new' && SAVED.state.zone_id !== zoneId(S) && SAVED.file === f.file &&
+      !confirm(`กรอบ/gap/ขนาดเปลี่ยน → เป็น zone ใหม่ (${zoneId(S)})\nzone เดิม ${SAVED.state.zone_id} ยังมีสถานะ ${SAVED.state.status} และออเดอร์ของมันยังอยู่บน Deribit\nควร "ปิด zone ถาวร" ของเดิมก่อน — บันทึกต่อไหม?`)) return;
+  await api('/api/save', {fields: f, overwrite: exists});
+  SEL = f.file; toast(`บันทึก zones/${f.file}.toml แล้ว`);
+  await loadZones(false);
+});
+$('btnCheck').onclick = () => act($('btnCheck'), async () => {
+  show('กำลังตรวจกับ Deribit (ไม่ส่งคำสั่ง)…');
+  const r = await api('/api/check', {file: SAVED.file, adopt_manual: $('ckAdopt').checked});
+  show((r.ok ? '' : '⚠️ ') + r.out);
+});
+$('btnStart').onclick = () => act($('btnStart'), async () => {
+  const st = SAVED.state, dry = $('ckDry').checked, force = !dry && $('ckForce').checked;
+  if (dry) {
+    if (!confirm(`เริ่มบอทแบบ DRY-RUN (ไม่ส่งคำสั่งจริง)\n\nzone: ${fmt(S.lower)}–${fmt(S.upper)} gap ${fmt(S.gap)} × ${fmt(S.size)} USD\nดูผลใน log ด้านล่าง ("[DRY-RUN] ...") แล้วกด ■ หยุดเมื่อพอใจ\n(ระหว่างนี้เริ่มบอท LIVE ด้วย key เดียวกันไม่ได้)`)) return;
+    show('กำลังเริ่มบอท DRY-RUN…');
+    const r = await api('/api/start', {file: SAVED.file, adopt_manual: $('ckAdopt').checked, clear_halt: $('ckHalt').checked, dry: true});
+    show((r.ok ? `✅ บอท DRY-RUN เริ่มแล้ว (PID ${r.pid})\n\n` : '❌ เริ่มไม่สำเร็จ\n\n') + r.out); toast(r.ok ? 'DRY-RUN เริ่มแล้ว' : 'เริ่มไม่สำเร็จ', !r.ok);
+    return;
+  }
+  if (force && !confirm(`⚠️ --force: ข้ามด่าน liq ตอนเริ่ม\nliq ตอน zone เต็มอาจ${isLong(S) ? 'สูงกว่า lower − liq_buffer' : 'ต่ำกว่า upper + liq_buffer'} (เสี่ยงโดน liquidate ก่อนต่อพอร์ต)\n\nแน่ใจไหม?`)) return;
+  if (!confirm(`เริ่มบอท LIVE — ส่งคำสั่งจริง\n\nบัญชี: ${ACC && ACC.user || '?'}${ACC && ACC.testnet ? ' (testnet)' : ''}\nzone: ${word(S).toUpperCase()} ${fmt(S.lower)}–${fmt(S.upper)} gap ${fmt(S.gap)} × ${fmt(S.size)} USD (${st.n} ชั้น)\n` +
+    `${$('ckAdopt').checked ? '--adopt-manual: รับออเดอร์มือที่ตรงสูตร ยกเลิกตัวที่ไม่ตรง\n' : ''}${$('ckHalt').checked ? '--clear-halt\n' : ''}\nหลังเริ่ม ห้ามวาง/ยกเลิกออเดอร์ BTC-PERPETUAL ในบัญชีนี้เอง`)) return;
+  show('กำลังเริ่มบอท…');
+  const r = await api('/api/start', {file: SAVED.file, adopt_manual: $('ckAdopt').checked, clear_halt: $('ckHalt').checked, force});
+  show((r.ok ? `✅ บอทเริ่มแล้ว (PID ${r.pid})\n\n` : '❌ เริ่มไม่สำเร็จ\n\n') + r.out);
+  toast(r.ok ? 'บอทเริ่มแล้ว' : 'เริ่มไม่สำเร็จ', !r.ok);
+});
+$('btnStop').onclick = () => act($('btnStop'), async () => {
+  if (!confirm('หยุดบอท (เหมือนกด Ctrl+C)?\n\nออเดอร์ที่วางไว้ยังค้างบน Deribit และ fill ได้ตามปกติ แต่จะไม่มีออเดอร์ฝั่งตรงข้ามจนกว่าจะเริ่มบอทใหม่')) return;
+  show('กำลังหยุดบอท…');
+  const r = await api('/api/stop', {file: SAVED.file});
+  show(r.out); toast(r.ok ? 'หยุดบอทแล้ว' : 'หยุดไม่สำเร็จ', !r.ok);
+});
+$('btnClose').onclick = () => act($('btnClose'), async () => {
+  const zid = SAVED.state.zone_id;
+  const t = prompt(`ปิด zone ถาวร: ยกเลิกออเดอร์ของบอททุกตัวใน zone นี้ (position ยังอยู่) และ zone นี้จะเปิดซ้ำไม่ได้\n\nพิมพ์รหัส zone เพื่อยืนยัน:\n${zid}`);
+  if (t === null) return;
+  const r = await api('/api/close', {file: SAVED.file, confirm: t.trim()});
+  show(r.out || (r.ok ? 'ปิดแล้ว' : 'ไม่สำเร็จ'));
+});
+$('btnDel').onclick = () => act($('btnDel'), async () => {
+  const z = ZONES.find(z => z.file === SEL);
+  if (!z) return;
+  const st = z.state || {}, twins = ZONES.filter(x => x.file !== z.file && x.state && x.state.zone_id === st.zone_id);
+  let msg = `ลบไฟล์ zones/${z.file}.toml ?\n\nไฟล์ถูกย้ายไป zones/.bak/ (กู้คืนได้) · ไม่แตะออเดอร์บน Deribit และไม่ลบประวัติของ zone`;
+  if (twins.length) msg += `\n\nไฟล์ ${twins.map(x => x.file).join(', ')} ชี้ zone เดียวกันอยู่ — ยังคุม zone นี้ต่อได้จากไฟล์นั้น`;
+  else if (['active', 'halted'].includes(st.status)) msg += `\n\n⚠️ zone นี้ยัง ${st.status} และไม่มีไฟล์อื่นชี้ถึง — ออเดอร์ของบอทที่ค้างบน Deribit จะไม่มีใครดูแล\n(ถ้าเลิกใช้ zone นี้ ควร "ปิด zone" ก่อนลบไฟล์)`;
+  if (!confirm(msg)) return;
+  const r = await api('/api/delete', {file: z.file});
+  show(`ลบแล้ว — ย้ายไป ${r.moved_to}`); toast('ลบไฟล์ zone แล้ว');
+  SEL = null; await loadZones(false);
+});
+$('btnReopen').onclick = () => act($('btnReopen'), async () => {
+  if (!confirm(`เปิด zone ${SAVED.state.zone_id} ใหม่?\n\nสถานะเก่า (บัญชีไม้/ประวัติ fill) เก็บเป็นไฟล์สำรอง ไม่ลบ\nแล้วกด 🔍 ตรวจ → ▶ เริ่ม LIVE (ติ๊ก --adopt-manual) บอทจะนับ position ปัจจุบันเป็นชั้นที่ถืออยู่ และรับออเดอร์มือที่ตรงสูตรเป็นของบอท`)) return;
+  const r = await api('/api/reopen', {file: SAVED.file});
+  show(r.out); toast(r.ok ? 'เปิด zone ใหม่แล้ว — กด 🔍 ตรวจ ต่อ' : 'ไม่สำเร็จ', !r.ok);
+});
+$('btnCenter').onclick = () => { read(); const p = price(); if (!isFinite(p) || !(S.gap > 0)) return;
+  // ให้ราคาอยู่ช่วงไตรมาสแรกของกรอบนับจากฝั่ง position = 0 (short: ใกล้กรอบล่าง · long: ใกล้กรอบบน)
+  const n = Math.max(1, S.n || 12), lower = isLong(S) ? Math.ceil(p / S.gap) * S.gap + Math.floor(n / 4) * S.gap - n * S.gap
+    : Math.floor(p / S.gap) * S.gap - Math.floor(n / 4) * S.gap;
+  $('lower').value = lower; $('upper').value = lower + n * S.gap; render(); };
+$('btnRef').onclick = loadAcc;
+$('selFile').onchange = async () => { $('xfer').innerHTML = ''; SEL = $('selFile').value; await loadZones(false); render(); $('out').style.display = 'none'; loadLog(); loadXfer(); };
+$('ckAdopt').onchange = () => $('ckAdopt').dataset.touched = '1';
+$('ckDry').onchange = $('ckForce').onchange = () => renderCtl();
+for (const k of IDS) $(k).addEventListener('input', () => {
+  const v = id => parseFloat($(id).value);
+  if (['lower', 'gap', 'n'].includes(k) && v('gap') > 0 && v('n') >= 1) $('upper').value = fnum(v('lower') + Math.round(v('n')) * v('gap'));
+  if (k === 'upper' && v('gap') > 0) { const n = (v('upper') - v('lower')) / v('gap'); if (Math.abs(n - Math.round(n)) < 1e-9) $('n').value = Math.round(n); }
+  if (k === 'testnet') loadAcc();
+  render();
+});
+// ================= บอท Fixed Value (spot) =================
+let MODE = 'grid', ALLF = [], FVS = [], FVSEL = null, FVSAVED = null, FVACC = null, FVP = null, FVERR = '', fvBusy = false;
+const FVMAP = {fvName: 'name', fvFile: 'file', fvValue: 'value', fvMode: 'mode', fvStep: 'step', fvMin: 'min_order_usd', fvMax: 'max_order_usd',
+  fvLive: 'live', fvTestnet: 'testnet', fvChase: 'chase_bps', fvFee: 'fee_rate', fvReconcile: 'reconcile_sec', fvFlux: 'flux_halt_sec', fvCash: 'cash_accept_sec',
+  fvSettle: 'settle_sec', fvDebounce: 'debounce_sec', fvPending: 'pending_ttl', fvSpacing: 'order_spacing_sec', fvThrottle: 'throttle_max_sec', fvHeartbeat: 'heartbeat_sec', fvSummary: 'summary_hours'};
+const FVTXT = ['name', 'file', 'mode', 'live', 'testnet'];
+const FVDEF = {name: '', file: 'fv-new', value: 3500, mode: 'usd', step: 100, min_order_usd: 5, max_order_usd: 1000, live: 'false', testnet: 'false',
+  chase_bps: 5, fee_rate: 0.0002, reconcile_sec: 30, flux_halt_sec: 180, cash_accept_sec: 10,
+  settle_sec: 0.3, debounce_sec: 0.1, pending_ttl: 60, order_spacing_sec: 0.15, throttle_max_sec: 30, heartbeat_sec: 300, summary_hours: 12};
+const fvIsOwn = o => (o.label || '').startsWith('fv_');
+function fvFromSaved(z) { const o = {}; for (const k of Object.values(FVMAP)) o[k] = ['live', 'testnet'].includes(k) ? String(z[k]) : (z[k] ?? FVDEF[k]); return o; }
+function fvFill(v) { for (const [id, k] of Object.entries(FVMAP)) $(id).value = v[k] ?? ''; fvStepLabel(); }
+function fvRead() { const o = {}; for (const [id, k] of Object.entries(FVMAP)) o[k] = FVTXT.includes(k) ? $(id).value.trim() : ($(id).value === '' ? NaN : parseFloat($(id).value)); return o; }
+function fvFields() {
+  const f = fvRead(), z = FVSAVED || {};
+  return {...f, acct: FVSAVED ? FVSAVED.acct : ACCT, live: f.live === 'true', testnet: f.testnet === 'true', instrument: z.instrument || 'BTC_USDC', state_dir: z.state_dir};
+}
+const fvDirty = () => { if (!FVSAVED) return true; const a = fvFromSaved(FVSAVED), b = fvRead(); return Object.keys(a).some(k => String(a[k]) !== String(FVTXT.includes(k) ? b[k] : +b[k])); };
+function fvStepLabel() { const pct = $('fvMode').value === 'pct'; $('fvStepU').textContent = pct ? '%' : 'USD'; $('fvStep').step = pct ? '0.1' : '10'; }
+
+function setMode(m) {
+  MODE = m; ls.set('rbsi-ui-mode-' + ACCT, m);
+  for (const b of document.querySelectorAll('.mode')) b.classList.toggle('on', b.dataset.mode === m);
+  $('mainLayout').style.display = m === 'grid' ? '' : 'none';
+  $('fvView').style.display = m === 'fv' ? '' : 'none';
+  $('kzView').style.display = m === 'kzm' ? '' : 'none';
+  prefetchAcc(m === 'grid' ? '/api/account' : '/api/fv/account', m === 'fv' ? 'fvTestnet' : m === 'kzm' ? 'kzTestnet' : 'testnet');   // ไม่ต้องรอรายการเสร็จก่อน
+  if (m === 'fv') { fvLoadList(false).then(() => { fvRender(); fvLoadAcc(); fvLoadLog(); }); }
+  else if (m === 'kzm') { kzLoadList(false).then(() => { kzRender(); kzLoadAcc(); kzLoadLog(); }); }
+  else { loadZones(false).then(() => { render(); loadAcc(); loadLog(); }); }
+}
+function defaultMode(acct) {
+  const saved = ls.get('rbsi-ui-mode-' + acct);
+  if (saved === 'grid' || saved === 'fv' || saved === 'kzm') return saved;
+  const hasF = ALLF.some(f => (f.acct || '') === acct), hasZ = ALLZ.some(z => (z.acct || '') === acct), hasK = ALLK.some(f => (f.acct || '') === acct);
+  return hasK && !hasZ && !hasF ? 'kzm' : hasF && !hasZ ? 'fv' : 'grid';
+}
+
+async function fvLoadList(keepForm) {
+  const r = await api('/api/fv/list');
+  if (VER === null) VER = r.ver;
+  else if (r.ver !== VER && !fvBusy && !busy) { location.reload(); return; }     // โค้ดอัปเดต → โหลดหน้าใหม่เอง
+  ALLF = r.bots; renderTabs();
+  FVS = ALLF.filter(f => (f.acct || '') === ACCT);
+  const sel = $('fvSel'), cur = FVSEL;
+  sel.innerHTML = FVS.map(f => `<option value="${esc(f.file)}">${f.error ? '⚠️' : f.state.running ? '🟢' : f.state.status === 'halted' ? '🛑' : f.state.status === 'closed' ? '⚫' : '⚪'} ${esc(f.file)}${f.name ? ' — ' + esc(f.name) : ''}</option>`).join('') +
+    '<option value="__new__">＋ บอท Fixed Value ใหม่</option>';
+  if (cur && (cur === '__new__' || FVS.some(f => f.file === cur))) sel.value = cur;
+  else sel.value = (FVS.find(f => f.state && f.state.running) || FVS.find(f => !f.error) || {file: '__new__'}).file;
+  FVSEL = sel.value;
+  FVSAVED = FVS.find(f => f.file === FVSEL && !f.error) || null;
+  if (!keepForm) {
+    const a = ACCTS.find(a => a.acct === ACCT), nm = a ? acctName(a) : '';
+    fvFill(FVSAVED ? fvFromSaved(FVSAVED) : {...FVDEF, name: nm ? nm + '-FV' : 'FV', file: 'fv-' + (ACCT || 'main').toLowerCase()});
+  }
+  $('fvFileInfo').innerHTML = FVSAVED ? `fv/${esc(FVSAVED.file)}.toml · id <span class="mono">${esc(FVSAVED.state.fv_id)}</span>` : 'บอทใหม่ — กรอกแล้วกดบันทึก';
+  $('fvDel').style.display = FVSAVED ? '' : 'none';
+  $('fvDel').disabled = !!(FVSAVED && FVSAVED.state.running);
+}
+async function fvLoadAcc() {
+  const want = ACCT;
+  try { const a = await accReq('/api/fv/account', 'fvTestnet'); if (want !== ACCT) return; FVACC = a; if (a.user) USERS[want] = a.user; }
+  catch (e) { FVACC = {error: e.message}; }
+  fvRenderAcc(); fvRender();
+}
+async function fvLoadLog() {
+  if (!FVSAVED || !$('fvLogAuto').checked) return;
+  try {
+    const r = await api(`/api/fv/log?file=${encodeURIComponent(FVSAVED.file)}`), el = $('fvLog'), atEnd = el.scrollTop + el.clientHeight >= el.scrollHeight - 30;
+    el.textContent = r.log || '(ยังไม่มี log)';
+    if (atEnd) el.scrollTop = el.scrollHeight;
+  } catch (e) {}
+  const f = FVSAVED.state.fills || [];
+  $('fvFills').innerHTML = '<div class="info" style="margin:0 0 6px">' + (f.length ? 'fill ล่าสุด: ' + f.slice(-5).reverse().map(x =>
+    `<span class="mono">${new Date(x.ts).toLocaleString('th-TH', {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'})} ${x.side === 'sell' ? 'ขาย' : 'ซื้อ'} ${x.amount.toFixed(8)} @ ${fmt(x.price, 2)}</span>`).join(' · ') : 'ยังไม่มี fill') + '</div>';
+}
+
+let fvPrevT = null;
+function fvRender() {
+  if (MODE !== 'fv') return;
+  fvStepLabel();
+  $('fvDirty').textContent = !FVSAVED ? 'ยังไม่ได้บันทึก (บอทใหม่)' : fvDirty() ? '● มีการแก้ที่ยังไม่บันทึก' : '✓ ตรงกับไฟล์';
+  clearTimeout(fvPrevT);
+  fvPrevT = setTimeout(async () => {
+    const a = FVACC && !FVACC.error ? FVACC : {};
+    try {
+      FVP = await api('/api/fv/preview', {fields: fvFields(), bid: a.bid, ask: a.ask, btc: a.has_key ? +a.btc : null, usdc: a.has_key ? +a.usdc : null,
+        band: a.min_price && a.max_price ? [a.min_price, a.max_price] : null});
+      FVERR = ''; $('fvToml').textContent = FVP.toml;
+    } catch (e) { FVP = null; FVERR = e.message; $('fvToml').textContent = ''; }
+    fvRenderAll();
+  }, 200);
+  fvRenderCtl();
+}
+
+function fvRenderAll() {
+  const M = [], P = FVP, a = FVACC && !FVACC.error ? FVACC : null, st = FVSAVED && FVSAVED.state;
+  if (FVERR) M.push(['err', esc(FVERR)]);
+  if (FVACC && FVACC.error) M.push(['err', 'ดึงบัญชีไม่สำเร็จ: ' + esc(FVACC.error)]);
+  if (a && !a.has_key) M.push(['warn', 'แท็บนี้ไม่มี key — แสดงได้แค่ราคา']);
+  if (a && a.has_key) {
+    const foreign = (a.orders || []).filter(o => !fvIsOwn(o));
+    if (+a.perp) M.push(['err', `sub นี้มี position BTC-PERPETUAL ${fmt(a.perp)} USD — บอท Fixed Value ควรใช้ subaccount แยก (ไม่มี position อื่น)`]);
+    if (foreign.length) M.push(['err', `มีออเดอร์ BTC_USDC ที่ไม่ใช่ของบอท ${foreign.length} ตัว — บอทจะไม่เริ่ม (ยกเลิกก่อน หรือใช้ sub แยก)`]);
+  }
+  if (P && P.value !== undefined && !(st && st.running)) {
+    const d = P.dev;
+    if (Math.abs(d) >= P.delta) M.push(['warn', `มูลค่า BTC ตอนนี้ $${fmt(P.value, 2)} ห่างเป้า ${d > 0 ? '+' : ''}${fmt(d, 2)}$ (≥ Δ) — ตอนเริ่มต้อง${d > 0 ? 'ขาย' : 'ซื้อ'} ~$${fmt(Math.abs(d), 2)} ให้เข้าเป้า: ติ๊ก <b>--rebalance-now</b> เพื่อยืนยัน`]);
+    else M.push(['ok', `มูลค่า BTC $${fmt(P.value, 2)} อยู่ในกรอบ (${d >= 0 ? '+' : ''}${fmt(d, 2)}$) — เริ่มได้โดยไม่ต้องปรับ`]);
+    if (d < 0 && Math.abs(d) >= P.delta && P.cash < Math.abs(d)) M.push(['err', `USDC ${fmt(P.cash, 2)} ไม่พอซื้อให้เข้าเป้า (~${fmt(Math.abs(d), 2)})`]);
+    if (P.cash < P.delta) M.push(['warn', `USDC ${fmt(P.cash, 2)} น้อยกว่า Δ — ฝั่งซื้อจะหยุดตั้งแต่ไม้แรก`]);
+  }
+  if (P && P.round_trip <= 0) M.push(['err', 'Δ แคบเกินไป กำไรต่อรอบไม่พอจ่าย fee']);
+  $('fvMsgs').innerHTML = M.map(([c, t]) => `<div class="msg ${c}">${t}</div>`).join('');
+  // KPI
+  const tile = (t, v, sub, c = '') => `<div class="kpi"><div class="t">${t}</div><div class="v ${c}">${v}</div><div class="s">${sub}</div></div>`;
+  const hb = st && st.heartbeat && st.heartbeat.ts ? st.heartbeat : null;
+  if (!P) { $('fvKpis').innerHTML = ''; } else {
+    const pct = x => P.mid ? `${x >= P.mid ? '+' : ''}${fmt((x / P.mid - 1) * 100, 2)}%` : '';
+    $('fvKpis').innerHTML =
+      tile('มูลค่า BTC ตอนนี้', P.value !== undefined ? `$${fmt(P.value, 2)}` : '–', `เป้า $${fmt(+$('fvValue').value)} ± $${fmt(P.delta, 2)}` + (P.dev !== undefined ? ` · ${P.dev >= 0 ? '+' : ''}${fmt(P.dev, 2)}` : ''), P.dev !== undefined ? (Math.abs(P.dev) >= P.delta ? 'org' : '') : '') +
+      tile('USDC' + (P.after ? ' (หลังปรับเข้าเป้า)' : ''), P.cash !== undefined ? fmt(P.after ? P.cash_after : P.cash, 2) : '–',
+        P.cash_short ? '<span class="neg">ไม่พอปรับเข้าเป้าตั้งแต่เริ่ม</span>' : P.cash_out ? `หมดถ้าราคาลงถึง ${fmt(P.cash_out)} (${pct(P.cash_out)})` : 'ไม่หมดก่อนราคาเหลือ 1%', P.cash_short ? 'neg' : '') +
+      tile('ขาย / ซื้อ ที่ราคา' + (P.after ? ' (หลังปรับ)' : ''), P.sell_at ? `${fmt(P.sell_at)} / ${P.buy_at ? fmt(P.buy_at) : '–'}` : '–', P.sell_at ? `${pct(P.sell_at)} / ${P.buy_at ? pct(P.buy_at) : '–'} จากราคาตอนนี้` : '') +
+      tile('กำไรต่อรอบไป-กลับ', `$${fmt(P.round_trip, 2)}`, `Δ²/V − fee 2 ข้าง · Δ = ${fmt(P.delta / (+$('fvValue').value) * 100, 2)}% ของเป้า`, P.round_trip > 0 ? 'pos' : 'neg') +
+      tile('เทียบถือเฉย ๆ', hb && hb.hodl !== null && hb.hodl !== undefined ? `${hb.hodl >= 0 ? '+' : ''}$${fmt(hb.hodl, 2)}` : '–',
+        st ? `fill ${st.n_fills || 0} ครั้ง · fee สะสม $${fmt(st.fees_usd || 0, 2)}` : 'เริ่มนับเมื่อบอทเริ่ม', hb && hb.hodl >= 0 ? 'pos' : hb && hb.hodl < 0 ? 'neg' : '');
+  }
+  // ออเดอร์ที่ควรมี vs บน Deribit
+  const orders = a && a.orders ? a.orders.filter(fvIsOwn) : [];
+  let rows = '<thead><tr><th>ฝั่ง</th><th>ราคาตามสูตร</th><th>จำนวน BTC</th><th>มูลค่า</th><th>บน Deribit</th></tr></thead><tbody>';
+  for (const side of ['sell', 'buy']) {
+    const want = P && P[side], o = orders.find(x => x.side === side);
+    const oob = P && P.out_of_band && P.out_of_band[side];
+    const cell = !a || !a.has_key ? '<span class="mut">–</span>' : !o && oob ? `<span class="org">⏳ รอราคาเข้ากรอบ Deribit (${side === 'sell' ? '≤ ' + fmt(P.band[1], 2) : '≥ ' + fmt(P.band[0], 2)}) — วางอัตโนมัติเมื่อราคาใกล้</span>` : o ? `<span class="pos">✓</span> ${fmt(o.price, 2)} × ${(o.amount - o.filled).toFixed(8)}${want && Math.abs(o.price - want[0]) > 0.005 ? ' <span class="org">(ราคาตอนวาง/ไล่ราคา)</span>' : ''}` :
+      (st && st.running ? '<span class="org">ยังไม่มี (บอทกำลังจัดการ)</span>' : '<span class="mut">ยังไม่มี (วางเมื่อเริ่มบอท)</span>');
+    const short = side === 'buy' && want && P.cash !== undefined && want[0] * want[1] * 1.0002 > P.cash;
+    rows += `<tr><td>${side === 'sell' ? '<span class="tag s">ขาย</span>' : '<span class="tag b">ซื้อ</span>'}</td><td>${want ? fmt(want[0], 2) : '–'}</td><td>${want ? want[1].toFixed(8) : '–'}</td><td>${want ? '$' + fmt(want[0] * want[1], 2) : '–'}${short ? ' <span class="neg">USDC ไม่พอ — ไม่วาง</span>' : ''}</td><td style="text-align:left">${short ? '<span class="mut">–</span>' : cell}</td></tr>`;
+  }
+  $('fvTbl').innerHTML = rows + '</tbody>';
+  let lad = '<thead><tr><th>ขั้น</th><th>ราคา</th><th>จำนวน BTC</th><th>มูลค่า</th><th>ถือ BTC หลังไม้</th><th>USDC หลังไม้</th></tr></thead><tbody>';
+  const L = P && P.ladder ? P.ladder : [];
+  const sells = L.filter(r => r[0] === 'sell').reverse(), buys = L.filter(r => r[0] === 'buy');
+  sells.forEach((r, i) => lad += `<tr><td><span class="tag s">ขาย ${sells.length - i}</span></td><td>${fmt(r[1], 2)}</td><td>${r[2].toFixed(8)}</td><td>$${fmt(r[1] * r[2], 2)}</td><td>${r[3].toFixed(8)}</td><td>${fmt(r[4], 2)} ${esc(r[5])}</td></tr>`);
+  if (P && P.mid) lad += `<tr class="now"><td colspan="6">── ราคาตอนนี้ ${fmt(P.mid, 2)} ──</td></tr>`;
+  buys.forEach((r, i) => lad += `<tr><td><span class="tag b">ซื้อ ${i + 1}</span></td><td>${fmt(r[1], 2)}</td><td>${r[2].toFixed(8)}</td><td>$${fmt(r[1] * r[2], 2)}</td><td>${r[3].toFixed(8)}</td><td>${fmt(r[4], 2)} <span class="neg">${esc(r[5])}</span></td></tr>`);
+  $('fvLadder').innerHTML = lad + '</tbody>';
+  $('fvLadNote').textContent = P && P.after ? '(หลังปรับเข้าเป้าตอนเริ่ม · หัก fee แล้ว)' : '(จากยอดตอนนี้ · หัก fee แล้ว)';
+  fvRenderCtl();
+}
+
+function fvRenderCtl() {
+  const st = FVSAVED && FVSAVED.state, dirty = fvDirty(), running = !!(st && st.running), status = st ? st.status : 'new';
+  $('fvTag').innerHTML = !FVSAVED ? '<span class="tag off">ยังไม่ได้บันทึก</span>' : running ? runTag(st) :
+    status === 'halted' ? '<span class="tag halt">🛑 halt</span>' : status === 'closed' ? '<span class="tag off">ปิดแล้ว</span>' : '<span class="tag off">⚪ ไม่ได้รัน</span>';
+  const hb = st && st.heartbeat && st.heartbeat.ts ? st.heartbeat : null, age = hb ? Date.now() / 1000 - hb.ts : null;
+  $('fvStLine').innerHTML = !FVSAVED ? 'บันทึกไฟล์ก่อนจึงสั่งบอทได้' :
+    `id <b class="mono">${esc(st.fv_id)}</b> · สถานะ <b>${esc(status)}</b>${st.halt_reason ? ' — ' + esc(st.halt_reason) : ''}` +
+    (hb ? `<br>ตรวจล่าสุด <b class="${running && age > 120 ? 'neg' : ''}">${fmt(age)} วิที่แล้ว</b> · ราคา ${fmt(hb.mid, 2)} · BTC $${fmt(hb.value, 2)} (${hb.dev >= 0 ? '+' : ''}${fmt(hb.dev, 2)}) · USDC ${fmt(hb.quote, 2)} · ออเดอร์ ${hb.own}/2` : '');
+  $('fvHaltLb').style.display = status === 'halted' ? '' : 'none';
+  const can = FVSAVED && !dirty && !fvBusy;
+  $('fvCheck').disabled = !can || running || status === 'closed';
+  const dry = $('fvDry').checked;
+  $('fvStart').disabled = !can || running || status === 'closed' || ($('fvLive').value !== 'true' && !dry);
+  $('fvStart').textContent = dry ? '▶ เริ่ม DRY-RUN' : '▶ เริ่ม LIVE';
+  $('fvCrash').innerHTML = crashHtml(st);
+  $('fvStop').disabled = !FVSAVED || !running || fvBusy;
+  $('fvClose').disabled = !FVSAVED || running || status === 'closed' || fvBusy;
+  $('fvClose').style.display = status === 'closed' ? 'none' : '';
+  $('fvReopen').style.display = FVSAVED && status === 'closed' && !dirty ? '' : 'none';
+  $('fvReopen').disabled = fvBusy || running;
+  $('fvHint').innerHTML = !FVSAVED ? '' : dirty ? 'แก้ฟอร์มแล้วยังไม่บันทึก — บันทึกก่อนจึงตรวจ/เริ่มได้' :
+    running ? 'บอทรันอยู่ — จะแก้ค่าต้อง ■ หยุดบอทก่อน · "ตรวจ" ใช้ไม่ได้ระหว่างรัน ดู log ด้านล่างแทน' :
+    status === 'closed' ? 'บอทนี้ปิดแล้ว — กด ↺ เปิดบอทนี้ใหม่ (เริ่มนับใหม่จากยอดในบัญชีตอนนั้น) แล้ว 🔍 ตรวจ → ▶ เริ่ม' :
+    $('fvLive').value !== 'true' && !dry ? 'ไฟล์นี้ยังไม่อนุญาต live — ตั้ง "ส่งคำสั่งจริงได้ = true" แล้วบันทึก (หรือติ๊ก dry-run เพื่อทดลองโดยไม่ส่งคำสั่ง)' :
+    'ลำดับแนะนำ: 🔍 ตรวจ → อ่านผล → ▶ เริ่ม · บอทรันเป็น process แยก ปิดหน้านี้แล้วบอทยังรันต่อ';
+}
+
+function fvRenderAcc() {
+  const a = FVACC;
+  if (!a) return;
+  if (a.error) { $('fvAcc').innerHTML = `<div class="k neg">${esc(a.error)}</div><div></div>`; return; }
+  $('cPx').textContent = fmt(a.bid, 2); $('cSrc').textContent = `BTC_USDC bid${a.testnet ? ' · TESTNET' : ''}`;
+  $('cUser').textContent = a.has_key ? (a.user || '(ไม่ทราบชื่อ)') : 'ไม่มี key';
+  $('fvAccAge').textContent = '· ' + new Date(a.ts * 1000).toLocaleTimeString('th-TH');
+  if (!a.has_key) { $('fvAcc').innerHTML = '<div class="k">ไม่มี key</div><div></div>'; return; }
+  const row = (k, v, c = '') => `<div class="k">${k}</div><div class="v ${c}">${v}</div>`;
+  const own = (a.orders || []).filter(fvIsOwn).length;
+  $('fvAcc').innerHTML = row('บัญชี', esc(a.user || '–') + (a.acct_type ? ` <span class="mut">(${esc(a.acct_type)})</span>` : '')) +
+    row('BTC', `${(+a.btc).toFixed(8)} <span class="mut">≈ $${fmt(a.btc * a.bid, 2)}</span>`) + row('USDC', fmt(a.usdc, 2)) +
+    row('ติดออเดอร์ (reserve)', `${(+a.btc_reserved || 0).toFixed(8)} BTC · ${fmt(+a.usdc_reserved || 0, 2)} USDC`) +
+    row('BTC_USDC bid / ask', `${fmt(a.bid, 2)} / ${fmt(a.ask, 2)}`) +
+    row('กรอบราคาที่ Deribit รับ', a.min_price ? `${fmt(a.min_price, 2)} – ${fmt(a.max_price, 2)} <span class="mut">(~±2% จาก index)</span>` : '–') + row('mark (index)', `${fmt(a.mark, 2)} <span class="mut">บอทใช้ bid/ask</span>`) +
+    row('ออเดอร์ BTC_USDC', `${(a.orders || []).length} <span class="mut">(ของบอท ${own})</span>`) +
+    row('position perp', +a.perp ? `<span class="neg">${fmt(a.perp)} USD</span>` : '0');
+}
+
+// ---------- ปุ่ม ----------
+function fvShow(t) { $('fvOut').style.display = 'block'; $('fvOut').textContent = t; }
+async function fvAct(btn, fn) {
+  fvBusy = true; btn.classList.add('spin'); fvRenderCtl();
+  try { await fn(); } catch (e) { fvShow('❌ ' + e.message); toast(e.message, true); }
+  fvBusy = false; btn.classList.remove('spin');
+  await fvLoadList(true); fvRender(); fvLoadLog();
+}
+const fvFlags = () => ({rebalance_now: $('fvRebal').checked, accept_balance: $('fvAccept').checked, clear_halt: $('fvHalt').checked});
+$('fvSave').onclick = () => fvAct($('fvSave'), async () => {
+  const f = fvFields(), exists = FVS.some(x => x.file === f.file) || ALLF.some(x => x.file === f.file);
+  if (exists && !confirm(`เขียนทับ fv/${f.file}.toml ?\n(ไฟล์เดิมสำรองไว้ใน fv/.bak/)`)) return;
+  if (FVSAVED && FVP && FVSAVED.file === f.file && FVSAVED.state.fv_id !== FVP.fv_id && FVSAVED.state.status !== 'new' &&
+      !confirm(`Fix Value / Δ เปลี่ยน → เป็นบอทใหม่ (${FVP.fv_id})\nบอทเดิม ${FVSAVED.state.fv_id} ยังมีสถานะ ${FVSAVED.state.status} และอาจมีออเดอร์ค้าง\nควร "ปิดบอทนี้" ก่อน — บันทึกต่อไหม?`)) return;
+  await api('/api/fv/save', {fields: f, overwrite: exists});
+  FVSEL = f.file; toast(`บันทึก fv/${f.file}.toml แล้ว`);
+  await fvLoadList(false);
+});
+$('fvDel').onclick = () => fvAct($('fvDel'), async () => {
+  if (!FVSAVED || !confirm(`ลบไฟล์ fv/${FVSAVED.file}.toml ?\n\nย้ายไป fv/.bak/ (กู้คืนได้) · ไม่แตะออเดอร์บน Deribit${['active', 'halted'].includes(FVSAVED.state.status) ? '\n\n⚠️ บอทนี้ยัง ' + FVSAVED.state.status + ' — ถ้าเลิกใช้ ควร "ปิดบอทนี้" ก่อน (ยกเลิกออเดอร์ของบอท)' : ''}`)) return;
+  const r = await api('/api/fv/delete', {file: FVSAVED.file});
+  fvShow('ลบแล้ว — ย้ายไป ' + r.moved_to); FVSEL = null; await fvLoadList(false);
+});
+$('fvCheck').onclick = () => fvAct($('fvCheck'), async () => {
+  fvShow('กำลังตรวจกับ Deribit (ไม่ส่งคำสั่ง)…');
+  const r = await api('/api/fv/check', {file: FVSAVED.file, ...fvFlags()});
+  fvShow((r.ok ? '' : '⚠️ ') + r.out);
+});
+$('fvStart').onclick = () => fvAct($('fvStart'), async () => {
+  const fl = fvFlags(), P = FVP || {};
+  if ($('fvDry').checked) {
+    if (!confirm('เริ่มบอท Fixed Value แบบ DRY-RUN (ไม่ส่งคำสั่งจริง)\n\nดูผลใน log ("[DRY-RUN] ...") แล้วกด ■ หยุดเมื่อพอใจ')) return;
+    fvShow('กำลังเริ่มบอท DRY-RUN…');
+    const r = await api('/api/fv/start', {file: FVSAVED.file, ...fl, dry: true});
+    fvShow((r.ok ? `✅ บอท DRY-RUN เริ่มแล้ว (PID ${r.pid})\n\n` : '❌ เริ่มไม่สำเร็จ\n\n') + r.out); toast(r.ok ? 'DRY-RUN เริ่มแล้ว' : 'เริ่มไม่สำเร็จ', !r.ok);
+    return;
+  }
+  if (!confirm(`เริ่มบอท Fixed Value LIVE — ส่งคำสั่งจริง\n\nบัญชี: ${FVACC && FVACC.user || '?'} (แท็บ ${ACCT || 'หลัก'})\nเป้า BTC $${fmt(+$('fvValue').value)} ± $${fmt(P.delta, 2)} · คู่ BTC_USDC post-only\n` +
+    (fl.rebalance_now ? `--rebalance-now: ปรับเข้าเป้าทันที (${P.dev > 0 ? 'ขาย' : 'ซื้อ'} ~$${fmt(Math.abs(P.dev || 0), 2)})\n` : '') + (fl.accept_balance ? '--accept-balance\n' : '') + (fl.clear_halt ? '--clear-halt\n' : '') +
+    '\nหลังเริ่ม ห้ามวาง/ยกเลิกออเดอร์ BTC_USDC หรือโอน BTC เข้า-ออก sub นี้เอง')) return;
+  fvShow('กำลังเริ่มบอท…');
+  const r = await api('/api/fv/start', {file: FVSAVED.file, ...fl});
+  fvShow((r.ok ? `✅ บอทเริ่มแล้ว (PID ${r.pid})\n\n` : '❌ เริ่มไม่สำเร็จ\n\n') + r.out);
+  toast(r.ok ? 'บอทเริ่มแล้ว' : 'เริ่มไม่สำเร็จ', !r.ok);
+  if (r.ok) { $('fvRebal').checked = false; $('fvAccept').checked = false; $('fvHalt').checked = false; }
+});
+$('fvStop').onclick = () => fvAct($('fvStop'), async () => {
+  if (!confirm('หยุดบอท (เหมือนกด Ctrl+C)?\n\nออเดอร์ที่วางไว้ยังค้างบน Deribit และ fill ได้ตามปกติ — บอทเก็บตกให้ตอนเริ่มใหม่')) return;
+  fvShow('กำลังหยุดบอท…');
+  const r = await api('/api/fv/stop', {file: FVSAVED.file});
+  fvShow(r.out); toast(r.ok ? 'หยุดบอทแล้ว' : 'หยุดไม่สำเร็จ', !r.ok);
+});
+$('fvClose').onclick = () => fvAct($('fvClose'), async () => {
+  const id = FVSAVED.state.fv_id;
+  const t = prompt(`ปิดบอทนี้: ยกเลิกออเดอร์ของบอทบน BTC_USDC (BTC/USDC ในบัญชียังอยู่ครบ) และบอทนี้จะเริ่มซ้ำไม่ได้\n\nพิมพ์รหัสบอทเพื่อยืนยัน:\n${id}`);
+  if (t === null) return;
+  const r = await api('/api/fv/close', {file: FVSAVED.file, confirm: t.trim()});
+  fvShow(r.out || (r.ok ? 'ปิดแล้ว' : 'ไม่สำเร็จ'));
+});
+$('fvReopen').onclick = () => fvAct($('fvReopen'), async () => {
+  if (!confirm(`เปิดบอท ${FVSAVED.state.fv_id} ใหม่?\n\n• สถานะเก่า (บัญชีไม้/ประวัติ fill) เก็บเป็นไฟล์สำรอง ไม่ลบ\n• บอทจะเริ่มนับใหม่จากยอด BTC/USDC ในบัญชีตอนเริ่ม (เทียบถือเฉย ๆ นับใหม่)\n• จากนั้นกด 🔍 ตรวจ → ▶ เริ่ม`)) return;
+  const r = await api('/api/fv/reopen', {file: FVSAVED.file});
+  fvShow(r.out); toast(r.ok ? 'เปิดบอทใหม่แล้ว — กด 🔍 ตรวจ ต่อ' : 'ไม่สำเร็จ', !r.ok);
+});
+$('fvUseNow').onclick = () => { if (FVP && FVP.value) { $('fvValue').value = Math.round(FVP.value); fvRender(); } else toast('ยังไม่มียอด BTC จากบัญชี', true); };
+$('fvSel').onchange = async () => { FVSEL = $('fvSel').value; await fvLoadList(false); fvRender(); $('fvOut').style.display = 'none'; fvLoadLog(); };
+for (const id of Object.keys(FVMAP)) $(id).addEventListener('input', () => { if (id === 'fvTestnet') fvLoadAcc(); fvRender(); });
+for (const b of document.querySelectorAll('.mode')) b.onclick = () => setMode(b.dataset.mode);
+$('fvDry').onchange = () => fvRenderCtl();
+
+// ================= บอท KZM Grid (spot) — ใช้ key/บัญชี spot และปุ่มแบบเดียวกับ Fixed Value =================
+let ALLK = [], KZS = [], KZSEL = null, KZSAVED = null, KZACC = null, KZP = null, KZERR = '', kzBusy = false;
+const KZMAP = {kzName: 'name', kzFile: 'file', kzFloor: 'floor', kzCeil: 'ceil', kzGap: 'gap', kzCap: 'capital', kzMin: 'min_order_usd',
+  kzMaxO: 'max_orders', kzMaxC: 'max_chase', kzLive: 'live', kzTestnet: 'testnet', kzChase: 'chase_bps', kzFee: 'fee_rate', kzReconcile: 'reconcile_sec',
+  kzFlux: 'flux_halt_sec', kzCash: 'cash_accept_sec', kzSettle: 'settle_sec', kzDebounce: 'debounce_sec', kzPending: 'pending_ttl', kzSpacing: 'order_spacing_sec',
+  kzThrottle: 'throttle_max_sec', kzHeartbeat: 'heartbeat_sec', kzSummary: 'summary_hours'};
+const KZTXT = ['name', 'file', 'live', 'testnet'];
+const KZDEF = {name: '', file: 'kzm-new', floor: 15000, ceil: 150000, gap: 500, capital: 10000, min_order_usd: 5, max_orders: 5, max_chase: 3,
+  live: 'false', testnet: 'false', chase_bps: 5, fee_rate: 0.0002, reconcile_sec: 30, flux_halt_sec: 180, cash_accept_sec: 10,
+  settle_sec: 0.3, debounce_sec: 0.1, pending_ttl: 60, order_spacing_sec: 0.15, throttle_max_sec: 30, heartbeat_sec: 300, summary_hours: 12};
+const kzPre = () => 'kz_' + (KZP && KZP.fv_id ? KZP.fv_id : (KZSAVED ? KZSAVED.state.fv_id : '')) + '_';
+const kzIsOwn = o => (o.label || '').startsWith(kzPre());
+function kzFromSaved(z) { const o = {}; for (const k of Object.values(KZMAP)) o[k] = ['live', 'testnet'].includes(k) ? String(z[k]) : (z[k] ?? KZDEF[k]); return o; }
+function kzFill(v) { for (const [id, k] of Object.entries(KZMAP)) $(id).value = v[k] ?? ''; }
+function kzRead() { const o = {}; for (const [id, k] of Object.entries(KZMAP)) o[k] = KZTXT.includes(k) ? $(id).value.trim() : ($(id).value === '' ? NaN : parseFloat($(id).value)); return o; }
+function kzFields() {
+  const f = kzRead(), z = KZSAVED || {};
+  return {...f, acct: KZSAVED ? KZSAVED.acct : ACCT, live: f.live === 'true', testnet: f.testnet === 'true', instrument: z.instrument || 'BTC_USDC', state_dir: z.state_dir};
+}
+const kzDirty = () => { if (!KZSAVED) return true; const a = kzFromSaved(KZSAVED), b = kzRead(); return Object.keys(a).some(k => String(a[k]) !== String(KZTXT.includes(k) ? b[k] : +b[k])); };
+
+async function kzLoadList(keepForm) {
+  const r = await api('/api/kzm/list');
+  if (VER === null) VER = r.ver;
+  else if (r.ver !== VER && !kzBusy && !busy) { location.reload(); return; }
+  ALLK = r.bots; renderTabs();
+  KZS = ALLK.filter(f => (f.acct || '') === ACCT);
+  const sel = $('kzSel'), cur = KZSEL;
+  sel.innerHTML = KZS.map(f => `<option value="${esc(f.file)}">${f.error ? '⚠️' : f.state.running ? '🟢' : f.state.status === 'halted' ? '🛑' : f.state.status === 'closed' ? '⚫' : '⚪'} ${esc(f.file)}${f.name ? ' — ' + esc(f.name) : ''}</option>`).join('') +
+    '<option value="__new__">＋ บอท KZM Grid ใหม่</option>';
+  if (cur && (cur === '__new__' || KZS.some(f => f.file === cur))) sel.value = cur;
+  else sel.value = (KZS.find(f => f.state && f.state.running) || KZS.find(f => !f.error) || {file: '__new__'}).file;
+  KZSEL = sel.value;
+  KZSAVED = KZS.find(f => f.file === KZSEL && !f.error) || null;
+  if (!keepForm) {
+    const a = ACCTS.find(a => a.acct === ACCT), nm = a ? acctName(a) : '';
+    kzFill(KZSAVED ? kzFromSaved(KZSAVED) : {...KZDEF, name: nm ? nm + '-KZM' : 'KZM', file: 'kzm-' + (ACCT || 'main').toLowerCase()});
+  }
+  $('kzFileInfo').innerHTML = KZSAVED ? `kzm/${esc(KZSAVED.file)}.toml · id <span class="mono">${esc(KZSAVED.state.fv_id)}</span>` : 'บอทใหม่ — กรอกแล้วกดบันทึก';
+  $('kzDel').style.display = KZSAVED ? '' : 'none';
+  $('kzDel').disabled = !!(KZSAVED && KZSAVED.state.running);
+}
+async function kzLoadAcc() {
+  const want = ACCT;
+  try { const a = await accReq('/api/fv/account', 'kzTestnet'); if (want !== ACCT) return; KZACC = a; if (a.user) USERS[want] = a.user; }
+  catch (e) { KZACC = {error: e.message}; }
+  kzRenderAcc(); kzRender();
+}
+async function kzLoadLog() {
+  if (!KZSAVED || !$('kzLogAuto').checked) return;
+  try {
+    const r = await api(`/api/kzm/log?file=${encodeURIComponent(KZSAVED.file)}`), el = $('kzLog'), atEnd = el.scrollTop + el.clientHeight >= el.scrollHeight - 30;
+    el.textContent = r.log || '(ยังไม่มี log)';
+    if (atEnd) el.scrollTop = el.scrollHeight;
+  } catch (e) {}
+  const f = KZSAVED.state.fills || [];
+  $('kzFills').innerHTML = '<div class="info" style="margin:0 0 6px">' + (f.length ? 'fill ล่าสุด: ' + f.slice(-5).reverse().map(x =>
+    `<span class="mono">${new Date(x.ts).toLocaleString('th-TH', {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'})} ${x.side === 'sell' ? 'ขาย' : 'ซื้อ'} ${x.amount.toFixed(8)} @ ${fmt(x.price, 2)}</span>`).join(' · ') : 'ยังไม่มี fill') + '</div>';
+}
+
+let kzPrevT = null;
+function kzRender() {
+  if (MODE !== 'kzm') return;
+  $('kzDirty').textContent = !KZSAVED ? 'ยังไม่ได้บันทึก (บอทใหม่)' : kzDirty() ? '● มีการแก้ที่ยังไม่บันทึก' : '✓ ตรงกับไฟล์';
+  const f = kzRead(), n = (f.ceil - f.floor) / f.gap;
+  $('kzCalc').innerHTML = n > 0 && Number.isFinite(n) ? `= <b>${fmt(n)}</b> ชั้น × <b>$${fmt(f.capital / n, 2)}</b> ต่อชั้น` + (Math.abs(n - Math.round(n)) > 1e-9 ? ' <span class="neg">(ต้องหารลงตัว)</span>' : '') : '';
+  clearTimeout(kzPrevT);
+  kzPrevT = setTimeout(async () => {
+    const a = KZACC && !KZACC.error ? KZACC : {};
+    try {
+      KZP = await api('/api/kzm/preview', {fields: kzFields(), bid: a.bid, ask: a.ask, btc: a.has_key ? +a.btc : null, usdc: a.has_key ? +a.usdc : null,
+        band: a.min_price && a.max_price ? [a.min_price, a.max_price] : null, orders: a.orders || []});
+      KZERR = ''; $('kzToml').textContent = KZP.toml;
+    } catch (e) { KZP = null; KZERR = e.message; $('kzToml').textContent = ''; }
+    kzRenderAll();
+  }, 200);
+  kzRenderCtl();
+}
+
+function kzRenderAll() {
+  const M = [], P = KZP, a = KZACC && !KZACC.error ? KZACC : null, st = KZSAVED && KZSAVED.state;
+  if (KZERR) M.push(['err', esc(KZERR)]);
+  if (KZACC && KZACC.error) M.push(['err', 'ดึงบัญชีไม่สำเร็จ: ' + esc(KZACC.error)]);
+  if (a && !a.has_key) M.push(['warn', 'แท็บนี้ไม่มี key — แสดงได้แค่ราคา']);
+  if (a && a.has_key) {
+    const foreign = (a.orders || []).filter(o => !kzIsOwn(o));
+    if (+a.perp) M.push(['err', `sub นี้มี position BTC-PERPETUAL ${fmt(a.perp)} USD — บอท KZM ควรใช้ subaccount แยก`]);
+    if (foreign.length) M.push(['err', `มีออเดอร์ BTC_USDC ที่ไม่ใช่ของบอทนี้ ${foreign.length} ตัว — บอทจะไม่เริ่ม (ยกเลิกก่อน หรือใช้ sub แยก)`]);
+  }
+  if (P && P.error_btc) M.push(['err', esc(P.error_btc) + ' — BTC ใน sub มากกว่ากริดรับได้']);
+  if (P && P.start && !(st && st.running) && !P.started) {
+    const s = P.start;
+    if (s.buy_usd >= P.cost || s.sell_usd >= P.cost)
+      M.push(['warn', `เริ่มแบบ ratio ที่ราคา ${fmt(P.mid, 2)}: ถือ ${s.layers_ideal} ชั้น → ` + (s.buy_usd ? `ต้องซื้อทันที ~$${fmt(s.buy_usd, 2)}` : '') + (s.sell_usd ? ` ขาย ~$${fmt(s.sell_usd, 2)}` : '') +
+        ` (post-only ไล่ราคาทีละ ${+$('kzMaxC').value || 3} ชั้น) — ติ๊ก <b>--rebalance-now</b> เพื่อยืนยัน`]);
+    else M.push(['ok', `BTC ในบัญชีพอดีชั้นที่ควรถือแล้ว — เริ่มได้โดยไม่ต้องซื้อเพิ่ม`]);
+    if (P.cash_after < 0) M.push(['err', `USDC ${fmt(P.cash, 2)} ไม่พอซื้อชั้นตั้งต้น (ต้องการ ~${fmt(s.buy_usd, 2)})`]);
+  }
+  if (P && P.surplus !== undefined && P.surplus < -1) M.push(['warn', `USDC ไม่พอซื้อทุกชั้นจนถึง floor (ขาด ${fmt(-P.surplus, 2)}) — ฝั่งซื้อจะหยุดที่ราคา ~${fmt(P.cash_out || 0)}`]);
+  if (P && P.mid) { const g = +$('kzGap').value, fee = +$('kzFee').value; if (g / P.mid < 10 * 2 * fee) M.push(['warn', `gap ${fmt(g)} = ${fmt(g / P.mid * 100, 2)}% ของราคา — ต่ำกว่า 10× fee ไป-กลับ กำไรต่อรอบถูก fee กินมาก`]); }
+  $('kzMsgs').innerHTML = M.map(([c, t]) => `<div class="msg ${c}">${t}</div>`).join('');
+  // KPI
+  const tile = (t, v, sub, c = '') => `<div class="kpi"><div class="t">${t}</div><div class="v ${c}">${v}</div><div class="s">${sub}</div></div>`;
+  const hb = st && st.heartbeat && st.heartbeat.ts ? st.heartbeat : null, aft = P && !P.started ? ' (หลังเริ่ม)' : '';
+  if (!P) { $('kzKpis').innerHTML = ''; } else {
+    const rt = P.mid ? P.cost / P.mid * (+$('kzGap').value) - 2 * P.cost * (+$('kzFee').value) : P.round_trip;
+    $('kzKpis').innerHTML =
+      tile('กริด', `${fmt(P.n)} ชั้น`, `ชั้นละ $${fmt(P.cost, 2)} · กำไร/รอบที่ราคานี้ $${fmt(rt, 2)}`, rt > 0 ? '' : 'neg') +
+      tile('BTC' + aft, P.value_after !== undefined ? `$${fmt(P.value_after, 2)}` : '–', P.btc_after !== undefined ? `${P.btc_after.toFixed(8)} BTC` + (P.cash_after >= 0 ? ` · ${fmt(P.share_after * 100, 1)}% ของพอร์ต` : ' · <span class="neg">USDC ไม่พอซื้อครบ</span>') : '') +
+      tile('USDC' + aft, P.cash_after !== undefined ? fmt(P.cash_after, 2) : '–', P.to_floor !== undefined ? `ต้องกันไว้ซื้อถึง floor ${fmt(P.to_floor, 2)}` + (P.cash_out ? ` · <span class="neg">หมดที่ ${fmt(P.cash_out)}</span>` : '') : '', P.cash_after < 0 ? 'neg' : '') +
+      tile('เงินสดส่วนเกิน (นอกกริด)', P.surplus !== undefined ? `${P.surplus >= 0 ? '' : '−'}$${fmt(Math.abs(P.surplus), 2)}` : '–', 'Fix Cash ต่อชั้น → กำไรที่ปิดแล้วสะสมตรงนี้ · ถอนได้โดยไม่กระทบกริด', P.surplus >= 0 ? 'pos' : 'neg') +
+      tile('กำไร', st && st.status !== 'new' ? `$${fmt(st.grid_pnl || 0, 2)}` : '–', st && st.status !== 'new' ? `กริดแท้ ${st.rounds || 0} รอบ · ขายชั้นตั้งต้น $${fmt(st.init_pnl || 0, 2)}` +
+        (hb && hb.hodl !== undefined && hb.hodl !== null ? ` · รวมทั้งพอร์ต ${hb.hodl >= 0 ? '+' : ''}$${fmt(hb.hodl, 2)}` : '') : 'เริ่มนับเมื่อบอทเริ่ม', st && st.grid_pnl > 0 ? 'pos' : '');
+  }
+  // ตารางชั้นรอบราคา
+  const orders = a && a.orders ? a.orders.filter(kzIsOwn) : [], pre = kzPre();
+  const want = {}; for (const x of (P && P.actions) || []) want[x[1]] = x;
+  const K = k => String(k).padStart(4, '0');
+  let rows = '<thead><tr><th>ชั้น</th><th>ซื้อที่</th><th>ขายที่</th><th>BTC เต็มชั้น</th><th>ถืออยู่</th><th>ออเดอร์บน Deribit</th><th>บอทจะวาง</th></tr></thead><tbody>';
+  let nowDone = false;
+  for (const L of (P && P.layers) || []) {
+    if (!nowDone && P.mid && L.buy < P.mid) { rows += `<tr class="now"><td colspan="7">── ราคาตอนนี้ ${fmt(P.mid, 2)} ──</td></tr>`; nowDone = true; }
+    const pct = L.full ? L.h / L.full : 0;
+    const on = ['b', 's'].map(sd => orders.find(o => o.label === pre + K(L.k) + sd)).filter(Boolean)
+      .map(o => `<span class="tag ${o.side === 'buy' ? 'b' : 's'}">${o.side === 'buy' ? 'ซื้อ' : 'ขาย'}</span> ${fmt(o.price, 2)} × ${(o.amount - o.filled).toFixed(8)}`).join('<br>');
+    const will = ['b', 's'].map(sd => { const x = want[K(L.k) + sd], w = P.waiting && P.waiting[K(L.k) + sd];
+      return x ? `<span class="tag ${sd}">${sd === 'b' ? 'ซื้อ' : 'ขาย'}</span> ${fmt(x[2], 2)}${(sd === 'b' ? x[2] !== L.buy : x[2] !== L.sell) ? ' <span class="org">(ไล่ราคา)</span>' : ''}` :
+        w ? `<span class="org">⏳ ${sd === 'b' ? 'ซื้อ' : 'ขาย'} ${fmt(w, 2)} รอเข้ากรอบ</span>` : ''; }).filter(Boolean).join('<br>');
+    rows += `<tr><td>${L.k}</td><td>${fmt(L.buy)}</td><td>${fmt(L.sell)}</td><td>${L.full.toFixed(8)}</td>` +
+      `<td>${L.h > 0 ? `${L.h.toFixed(8)} <span class="mut">(${fmt(pct * 100)}%)</span>` : '<span class="mut">ว่าง</span>'}</td>` +
+      `<td style="text-align:left">${a && a.has_key ? (on || '<span class="mut">–</span>') : '<span class="mut">–</span>'}</td><td style="text-align:left">${will || (st && st.running ? '<span class="mut">✓</span>' : '<span class="mut">–</span>')}</td></tr>`;
+  }
+  $('kzTbl').innerHTML = rows + '</tbody>';
+  $('kzLayNote').textContent = !P || !P.mid ? '' : P.started ? '(จากบัญชีไม้ของบอท)' : '(ภาพหลังเริ่มแบบ ratio ตอนนี้)';
+  kzRenderCtl();
+}
+
+function kzRenderCtl() {
+  const st = KZSAVED && KZSAVED.state, dirty = kzDirty(), running = !!(st && st.running), status = st ? st.status : 'new';
+  $('kzTag').innerHTML = !KZSAVED ? '<span class="tag off">ยังไม่ได้บันทึก</span>' : running ? runTag(st) :
+    status === 'halted' ? '<span class="tag halt">🛑 halt</span>' : status === 'closed' ? '<span class="tag off">ปิดแล้ว</span>' : '<span class="tag off">⚪ ไม่ได้รัน</span>';
+  const hb = st && st.heartbeat && st.heartbeat.ts ? st.heartbeat : null, age = hb ? Date.now() / 1000 - hb.ts : null;
+  $('kzStLine').innerHTML = !KZSAVED ? 'บันทึกไฟล์ก่อนจึงสั่งบอทได้' :
+    `id <b class="mono">${esc(st.fv_id)}</b> · สถานะ <b>${esc(status)}</b>${st.halt_reason ? ' — ' + esc(st.halt_reason) : ''}` +
+    (hb ? `<br>ตรวจล่าสุด <b class="${running && age > 120 ? 'neg' : ''}">${fmt(age)} วิที่แล้ว</b> · ราคา ${fmt(hb.mid, 2)} · ถือ ${hb.layers_held}/${st.n} ชั้น · BTC $${fmt(hb.value, 2)} (${fmt(hb.share * 100)}%) · USDC ${fmt(hb.quote, 2)} · ออเดอร์ ${hb.own}` +
+      (hb.chase_buy || hb.chase_sell ? ` · ไล่ราคา ซื้อ ${hb.chase_buy} ขาย ${hb.chase_sell} ชั้น` : '') : '');
+  $('kzHaltLb').style.display = status === 'halted' ? '' : 'none';
+  const can = KZSAVED && !dirty && !kzBusy, dry = $('kzDry').checked;
+  $('kzCheck').disabled = !can || running || status === 'closed';
+  $('kzStart').disabled = !can || running || status === 'closed' || ($('kzLive').value !== 'true' && !dry);
+  $('kzStart').textContent = dry ? '▶ เริ่ม DRY-RUN' : '▶ เริ่ม LIVE';
+  $('kzCrash').innerHTML = crashHtml(st);
+  $('kzStop').disabled = !KZSAVED || !running || kzBusy;
+  $('kzClose').disabled = !KZSAVED || running || status === 'closed' || kzBusy;
+  $('kzClose').style.display = status === 'closed' ? 'none' : '';
+  $('kzReopen').style.display = KZSAVED && status === 'closed' && !dirty ? '' : 'none';
+  $('kzReopen').disabled = kzBusy || running;
+  $('kzHint').innerHTML = !KZSAVED ? '' : dirty ? 'แก้ฟอร์มแล้วยังไม่บันทึก — บันทึกก่อนจึงตรวจ/เริ่มได้' :
+    running ? 'บอทรันอยู่ — จะแก้ค่าต้อง ■ หยุดบอทก่อน · "ตรวจ" ใช้ไม่ได้ระหว่างรัน ดู log ด้านล่างแทน' :
+    status === 'closed' ? 'บอทนี้ปิดแล้ว — กด ↺ เปิดบอทนี้ใหม่ (นับชั้นใหม่จากยอดในบัญชีตอนนั้น) แล้ว 🔍 ตรวจ → ▶ เริ่ม' :
+    $('kzLive').value !== 'true' && !dry ? 'ไฟล์นี้ยังไม่อนุญาต live — ตั้ง "ส่งคำสั่งจริงได้ = true" แล้วบันทึก (หรือติ๊ก dry-run เพื่อทดลองโดยไม่ส่งคำสั่ง)' :
+    'ลำดับแนะนำ: 🔍 ตรวจ → อ่านผล → ▶ เริ่ม · บอทรันเป็น process แยก ปิดหน้านี้แล้วบอทยังรันต่อ';
+}
+
+function kzRenderAcc() {
+  const a = KZACC;
+  if (!a) return;
+  if (a.error) { $('kzAcc').innerHTML = `<div class="k neg">${esc(a.error)}</div><div></div>`; return; }
+  $('cPx').textContent = fmt(a.bid, 2); $('cSrc').textContent = `BTC_USDC bid${a.testnet ? ' · TESTNET' : ''}`;
+  $('cUser').textContent = a.has_key ? (a.user || '(ไม่ทราบชื่อ)') : 'ไม่มี key';
+  $('kzAccAge').textContent = '· ' + new Date(a.ts * 1000).toLocaleTimeString('th-TH');
+  if (!a.has_key) { $('kzAcc').innerHTML = '<div class="k">ไม่มี key</div><div></div>'; return; }
+  const row = (k, v, c = '') => `<div class="k">${k}</div><div class="v ${c}">${v}</div>`;
+  const own = (a.orders || []).filter(kzIsOwn).length;
+  $('kzAcc').innerHTML = row('บัญชี', esc(a.user || '–') + (a.acct_type ? ` <span class="mut">(${esc(a.acct_type)})</span>` : '')) +
+    row('BTC', `${(+a.btc).toFixed(8)} <span class="mut">≈ $${fmt(a.btc * a.bid, 2)}</span>`) + row('USDC', fmt(a.usdc, 2)) +
+    row('ติดออเดอร์ (reserve)', `${(+a.btc_reserved || 0).toFixed(8)} BTC · ${fmt(+a.usdc_reserved || 0, 2)} USDC`) +
+    row('BTC_USDC bid / ask', `${fmt(a.bid, 2)} / ${fmt(a.ask, 2)}`) +
+    row('กรอบราคาที่ Deribit รับ', a.min_price ? `${fmt(a.min_price, 2)} – ${fmt(a.max_price, 2)} <span class="mut">(~±2% จาก index)</span>` : '–') +
+    row('ออเดอร์ BTC_USDC', `${(a.orders || []).length} <span class="mut">(ของบอท ${own})</span>`) +
+    row('position perp', +a.perp ? `<span class="neg">${fmt(a.perp)} USD</span>` : '0');
+}
+
+// ---------- ปุ่ม ----------
+function kzShow(t) { $('kzOut').style.display = 'block'; $('kzOut').textContent = t; }
+async function kzAct(btn, fn) {
+  kzBusy = true; btn.classList.add('spin'); kzRenderCtl();
+  try { await fn(); } catch (e) { kzShow('❌ ' + e.message); toast(e.message, true); }
+  kzBusy = false; btn.classList.remove('spin');
+  await kzLoadList(true); kzRender(); kzLoadLog();
+}
+const kzFlags = () => ({rebalance_now: $('kzRebal').checked, accept_balance: $('kzAccept').checked, clear_halt: $('kzHalt').checked});
+$('kzSave').onclick = () => kzAct($('kzSave'), async () => {
+  const f = kzFields(), exists = ALLK.some(x => x.file === f.file);
+  if (exists && !confirm(`เขียนทับ kzm/${f.file}.toml ?\n(ไฟล์เดิมสำรองไว้ใน kzm/.bak/)`)) return;
+  if (KZSAVED && KZP && KZSAVED.file === f.file && KZSAVED.state.fv_id !== KZP.fv_id && KZSAVED.state.status !== 'new' &&
+      !confirm(`กรอบ/gap/ทุนเปลี่ยน → เป็นบอทใหม่ (${KZP.fv_id})\nบอทเดิม ${KZSAVED.state.fv_id} ยังมีสถานะ ${KZSAVED.state.status} และอาจมีออเดอร์ค้าง\nควร "ปิดบอทนี้" ก่อน — บันทึกต่อไหม?`)) return;
+  await api('/api/kzm/save', {fields: f, overwrite: exists});
+  KZSEL = f.file; toast(`บันทึก kzm/${f.file}.toml แล้ว`);
+  await kzLoadList(false);
+});
+$('kzDel').onclick = () => kzAct($('kzDel'), async () => {
+  if (!KZSAVED || !confirm(`ลบไฟล์ kzm/${KZSAVED.file}.toml ?\n\nย้ายไป kzm/.bak/ (กู้คืนได้) · ไม่แตะออเดอร์บน Deribit${['active', 'halted'].includes(KZSAVED.state.status) ? '\n\n⚠️ บอทนี้ยัง ' + KZSAVED.state.status + ' — ถ้าเลิกใช้ ควร "ปิดบอทนี้" ก่อน (ยกเลิกออเดอร์ของบอท)' : ''}`)) return;
+  const r = await api('/api/kzm/delete', {file: KZSAVED.file});
+  kzShow('ลบแล้ว — ย้ายไป ' + r.moved_to); KZSEL = null; await kzLoadList(false);
+});
+$('kzCheck').onclick = () => kzAct($('kzCheck'), async () => {
+  kzShow('กำลังตรวจกับ Deribit (ไม่ส่งคำสั่ง)…');
+  const r = await api('/api/kzm/check', {file: KZSAVED.file, ...kzFlags()});
+  kzShow((r.ok ? '' : '⚠️ ') + r.out);
+});
+$('kzStart').onclick = () => kzAct($('kzStart'), async () => {
+  const fl = kzFlags(), P = KZP || {};
+  if ($('kzDry').checked) {
+    if (!confirm('เริ่มบอท KZM แบบ DRY-RUN (ไม่ส่งคำสั่งจริง)\n\nดูผลใน log ("[DRY-RUN] ...") แล้วกด ■ หยุดเมื่อพอใจ')) return;
+    kzShow('กำลังเริ่มบอท DRY-RUN…');
+    const r = await api('/api/kzm/start', {file: KZSAVED.file, ...fl, dry: true});
+    kzShow((r.ok ? `✅ บอท DRY-RUN เริ่มแล้ว (PID ${r.pid})\n\n` : '❌ เริ่มไม่สำเร็จ\n\n') + r.out); toast(r.ok ? 'DRY-RUN เริ่มแล้ว' : 'เริ่มไม่สำเร็จ', !r.ok);
+    return;
+  }
+  if (!confirm(`เริ่มบอท KZM Grid LIVE — ส่งคำสั่งจริง\n\nบัญชี: ${KZACC && KZACC.user || '?'} (แท็บ ${ACCT || 'หลัก'})\nกริด ${fmt(+$('kzFloor').value)}–${fmt(+$('kzCeil').value)} gap ${fmt(+$('kzGap').value)} · ${fmt(P.n || 0)} ชั้น × $${fmt(P.cost || 0, 2)} · BTC_USDC post-only\n` +
+    (fl.rebalance_now && P.start && P.start.buy_usd ? `--rebalance-now: ซื้อชั้นตั้งต้น ~$${fmt(P.start.buy_usd, 2)} (ทยอยไล่ราคา)\n` : '') + (fl.accept_balance ? '--accept-balance\n' : '') + (fl.clear_halt ? '--clear-halt\n' : '') +
+    '\nหลังเริ่ม ห้ามวาง/ยกเลิกออเดอร์ BTC_USDC หรือโอน BTC เข้า-ออก sub นี้เอง (ถอน USDC ส่วนเกินได้)')) return;
+  kzShow('กำลังเริ่มบอท…');
+  const r = await api('/api/kzm/start', {file: KZSAVED.file, ...fl});
+  kzShow((r.ok ? `✅ บอทเริ่มแล้ว (PID ${r.pid})\n\n` : '❌ เริ่มไม่สำเร็จ\n\n') + r.out);
+  toast(r.ok ? 'บอทเริ่มแล้ว' : 'เริ่มไม่สำเร็จ', !r.ok);
+  if (r.ok) { $('kzRebal').checked = false; $('kzAccept').checked = false; $('kzHalt').checked = false; }
+});
+$('kzStop').onclick = () => kzAct($('kzStop'), async () => {
+  if (!confirm('หยุดบอท (เหมือนกด Ctrl+C)?\n\nออเดอร์ที่วางไว้ยังค้างบน Deribit และ fill ได้ตามปกติ — บอทเก็บตกให้ตอนเริ่มใหม่')) return;
+  kzShow('กำลังหยุดบอท…');
+  const r = await api('/api/kzm/stop', {file: KZSAVED.file});
+  kzShow(r.out); toast(r.ok ? 'หยุดบอทแล้ว' : 'หยุดไม่สำเร็จ', !r.ok);
+});
+$('kzClose').onclick = () => kzAct($('kzClose'), async () => {
+  const id = KZSAVED.state.fv_id;
+  const t = prompt(`ปิดบอทนี้: ยกเลิกออเดอร์ของบอทบน BTC_USDC (BTC/USDC ในบัญชียังอยู่ครบ) และบอทนี้จะเริ่มซ้ำไม่ได้\n\nพิมพ์รหัสบอทเพื่อยืนยัน:\n${id}`);
+  if (t === null) return;
+  const r = await api('/api/kzm/close', {file: KZSAVED.file, confirm: t.trim()});
+  kzShow(r.out || (r.ok ? 'ปิดแล้ว' : 'ไม่สำเร็จ'));
+});
+$('kzReopen').onclick = () => kzAct($('kzReopen'), async () => {
+  if (!confirm(`เปิดบอท ${KZSAVED.state.fv_id} ใหม่?\n\n• สถานะเก่า (บัญชีไม้รายชั้น/ประวัติ fill) เก็บเป็นไฟล์สำรอง ไม่ลบ\n• บอทจะนับชั้นใหม่จากยอด BTC/USDC ในบัญชีตอนเริ่ม\n• จากนั้นกด 🔍 ตรวจ → ▶ เริ่ม`)) return;
+  const r = await api('/api/kzm/reopen', {file: KZSAVED.file});
+  kzShow(r.out); toast(r.ok ? 'เปิดบอทใหม่แล้ว — กด 🔍 ตรวจ ต่อ' : 'ไม่สำเร็จ', !r.ok);
+});
+$('kzSel').onchange = async () => { KZSEL = $('kzSel').value; await kzLoadList(false); kzRender(); $('kzOut').style.display = 'none'; kzLoadLog(); };
+for (const id of Object.keys(KZMAP)) $(id).addEventListener('input', () => { if (id === 'kzTestnet') kzLoadAcc(); kzRender(); });
+$('kzDry').onchange = () => kzRenderCtl();
+
+(async () => {
+  try { await loadAccounts(); } catch (e) {}
+  const saved = ls.get('rbsi-ui-acct');
+  ACCT = saved !== null && ACCTS.some(a => a.acct === saved) ? saved : (ACCTS[0] ? ACCTS[0].acct : '');
+  try { ALLF = (await api('/api/fv/list')).bots; } catch (e) {}
+  try { ALLK = (await api('/api/kzm/list')).bots; } catch (e) {}
+  await loadZones(false);
+  setMode(defaultMode(ACCT));
+  setInterval(async () => {
+    if (MODE === 'fv') { try { await fvLoadList(true); fvRender(); } catch (e) {} fvLoadLog(); }
+    else if (MODE === 'kzm') { try { await kzLoadList(true); kzRender(); } catch (e) {} kzLoadLog(); }
+    else { try { await loadZones(true); render(); } catch (e) {} loadLog(); }
+  }, 5000);
+  setInterval(() => MODE === 'fv' ? fvLoadAcc() : MODE === 'kzm' ? kzLoadAcc() : loadAcc(), 15000);
+})();
+</script></body></html>

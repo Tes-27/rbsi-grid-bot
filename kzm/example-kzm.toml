@@ -1,0 +1,39 @@
+# ตัวอย่างบอท KZM Grid (Dynamic Ratio) บน Deribit spot — สร้างไฟล์จริงจากหน้าเว็บ (ปุ่ม KZM Grid)
+# ใช้ subaccount แยกเฉพาะบอทนี้: บอทถือว่า BTC และ USDC ทั้งหมดใน sub เป็นของกริด
+name = "KZM"
+env_file = "../.env"
+state_dir = "~/.rbsi-bot"
+live_allowed = false
+
+[deribit]
+testnet = false
+client_id_env = "DERIBIT_CLIENT_ID_KZM"
+client_secret_env = "DERIBIT_CLIENT_SECRET_KZM"
+
+[kzm]
+instrument = "BTC_USDC"
+floor = 15000                     # ชั้นแรกซื้อที่ราคานี้ (ต่ำกว่านี้ = ถือ BTC 100% ไม่ซื้อเพิ่ม)
+ceil = 150000                     # ชั้นสุดท้ายขายที่ราคานี้ (สูงกว่านี้ = เงินสด 100%)
+gap = 500                         # ระยะชั้น → 270 ชั้น
+capital = 10000                   # ทุนรวมทั้งกริด (USD) → ชั้นละ $37.04
+min_order_usd = 5
+fee_rate = 0.0002
+chase_bps = 5
+max_orders = 5                    # ออเดอร์รอที่ราคาชั้น ฝั่งละ (ชั้นใกล้ราคาที่สุด)
+max_chase = 3                     # ออเดอร์ไล่ราคา (ชั้นที่ราคาทะลุแล้ว) ฝั่งละต่อครั้ง
+
+[safety]
+settle_sec = 0.3
+debounce_sec = 0.1
+reconcile_sec = 30
+pending_ttl = 60
+flux_halt_sec = 180
+cash_accept_sec = 10
+heartbeat_sec = 300
+summary_hours = 12
+order_spacing_sec = 0.15
+throttle_max_sec = 30
+
+[telegram]
+token_env = "TG_BOT_TOKEN"
+chat_id_env = "TG_CHAT_ID"
